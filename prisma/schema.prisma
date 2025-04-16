@@ -1,0 +1,108 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("article")
+}
+
+model Blog {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String   @db.VarChar(3000)
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blog")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
+}
+
+model Treatment {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("treatment")
+}
+
+model Therapist {
+  id        Int        @id @default(autoincrement())
+  name      String
+  branch    String
+  image     String?
+  qrCodeUrl String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  feedbacks Feedback[]
+
+  @@map("therapist")
+}
+
+model Customer {
+  id        Int        @id @default(autoincrement())
+  name      String
+  contact   String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  feedbacks Feedback[]
+
+  @@map("customer")
+}
+
+model Feedback {
+  id          Int       @id @default(autoincrement())
+  therapistId Int
+  customerId  Int
+  cleanliness Rating
+  politeness  Rating
+  pressure    Rating
+  punctuality Rating
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  result      Int
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: NoAction)
+  therapist   Therapist @relation(fields: [therapistId], references: [id], onDelete: NoAction)
+
+  @@index([customerId], map: "feedback_customerId_fkey")
+  @@index([therapistId], map: "feedback_therapistId_fkey")
+  @@map("feedback")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Rating {
+  Sangat_Memuaskan
+  Memuaskan
+  Cukup
+  Tidak_Memuaskan
+  Sangat_Tidak_Memuaskan
+}
