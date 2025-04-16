@@ -6,16 +6,13 @@ import CustomerForm from "@/components/dashboard/ui/Form/CustomerForm";
 
 const prisma = new PrismaClient();
 
-type Props = {
-  params: {
-    id: string;
-  };
-};
-
-export default async function EditCustomerPage({ params }: Props) {
-  // Await params before using its properties
-  const { id } = await params; // Ensure that params are awaited before usage
-  const customerId = Number(id);
+export default async function EditCustomerPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  // ✅ JANGAN pakai `await params`, cukup langsung pakai `params.id`
+  const customerId = Number(params.id);
 
   if (isNaN(customerId)) return <div>Invalid customer ID</div>;
 
