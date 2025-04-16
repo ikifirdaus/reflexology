@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default async function EditCustomerPage({ params }: Props) {
-  const { id } = await Promise.resolve(params);
+  const { id } = params; // ✅ langsung akses params
 
   const customerId = Number(id);
 
