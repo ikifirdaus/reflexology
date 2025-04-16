@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default async function EditTherapistPage({ params }: Props) {
-  const { id } = params; // No need to await here
+  const { id } = await Promise.resolve(params); // disamakan dengan treatment
 
   const therapistId = Number(id);
 
