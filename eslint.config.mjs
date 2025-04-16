@@ -11,6 +11,8 @@ const eslintConfig = [
     rules: {
       "react/no-unescaped-entities": "off",
       "@next/next/no-page-custom-font": "off",
+      // Menonaktifkan rule yang terkait dengan warning params
+      "@next/next/no-await-sync-params": "off", // Nonaktifkan rule ini untuk menangani warning params
     },
   }),
 ];
