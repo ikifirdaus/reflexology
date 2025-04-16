@@ -199,8 +199,10 @@ const TherapistPage = () => {
                   >
                     ✕
                   </button>
-                  <img
+                  <Image
                     src={selectedImage}
+                    width={40}
+                    height={40}
                     alt="Full View"
                     className="max-w-[90vw] max-h-[80vh] object-contain"
                   />

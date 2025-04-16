@@ -101,7 +101,7 @@ export default function SignIn() {
 
         <div className="mt-2 text-center">
           <p>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary">
               <span className="text-blue-500 hover:text-blue-600">
                 Register
