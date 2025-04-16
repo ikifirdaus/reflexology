@@ -6,12 +6,12 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-interface Props {
+export default async function EditCustomerPage({
+  params,
+}: {
   params: { id: string };
-}
-
-export default async function EditCustomerPage({ params }: Props) {
-  const { id } = params; // ✅ langsung akses params
+}) {
+  const { id } = params;
 
   const customerId = Number(id);
 
