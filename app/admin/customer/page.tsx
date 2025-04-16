@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import FeedbackPage from "@/components/dashboard/pages/FeedbackPage";
+import CustomerPage from "@/components/dashboard/pages/CustomerPage";
 
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading customer...</div>}>
-      <FeedbackPage />
+      <CustomerPage />
     </Suspense>
   );
 }
