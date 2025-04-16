@@ -26,7 +26,6 @@ type ArticleFormProps = {
 export default function ArticleForm({ article }: ArticleFormProps) {
   const {
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({

@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ButtonSubmit } from "../Button/ButtonSubmit";
 import { Input } from "../Input/Input";
 import { Customer } from "@/types/customer";
-import Textarea from "../TextArea/Textarea";
 import { useState } from "react";
 import { Toast } from "../Toast/Toast";
 import { useRouter } from "next/navigation";
@@ -26,7 +25,6 @@ type CustomerFormProps = {
 export default function CustomerForm({ customer }: CustomerFormProps) {
   const {
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
@@ -70,10 +68,10 @@ export default function CustomerForm({ customer }: CustomerFormProps) {
       if (response.ok) {
         setToast({ message: "Customer saved successfully!", type: "success" });
         setTimeout(() => {
-          router.push("/admin/customer"); // Redirect to the articles page after 2 seconds
+          router.push("/admin/customer"); // Redirect to the customers page after 2 seconds
         }, 2000);
       } else {
-        setToast({ message: "Failed to save article.", type: "error" });
+        setToast({ message: "Failed to save customer.", type: "error" });
       }
     } catch (error) {
       setToast({ message: "An error occurred.", type: "error" });
@@ -111,18 +109,6 @@ export default function CustomerForm({ customer }: CustomerFormProps) {
             </span>
           )}
         </div>
-
-        {/* <div className="flex flex-col">
-          <label htmlFor="contact">
-            Contact<sup className="text-red-500">*</sup>
-          </label>
-          <Textarea {...register("contact")} id="contact" rows="4" />
-          {errors.contact && (
-            <span className="text-red-500 text-sm">
-              {errors.contact.message}
-            </span>
-          )}
-        </div> */}
 
         <ButtonSubmit type="submit">Submit</ButtonSubmit>
       </form>

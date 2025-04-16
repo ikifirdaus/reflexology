@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { z } from "zod";
+
+// Tipe untuk where filter pada Prisma
+type WhereFilter = {
+  createdAt?: {
+    gte?: Date;
+    lte?: Date;
+  };
+};
 
 export async function GET(req: Request) {
   try {
@@ -15,7 +22,7 @@ export async function GET(req: Request) {
       ?.trim()
       .toLowerCase();
 
-    const where: any = {};
+    const where: WhereFilter = {}; // Menggunakan tipe `WhereFilter` untuk `where`
 
     // Filter tanggal di Prisma (tetap gunakan database untuk ini)
     if (fromDate || toDate) {

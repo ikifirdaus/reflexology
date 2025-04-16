@@ -15,6 +15,9 @@ const signinSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+// Tipe data dari schema
+type SignInFormData = z.infer<typeof signinSchema>;
+
 export default function SignIn() {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -23,11 +26,11 @@ export default function SignIn() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<SignInFormData>({
     resolver: zodResolver(signinSchema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: SignInFormData) => {
     setError("");
 
     const res = await signIn("credentials", {
@@ -41,7 +44,7 @@ export default function SignIn() {
       return;
     }
 
-    router.push("/admin/feedbackCustomer"); // Redirect ke feedbackCustomer setelah berhasil login
+    router.push("/admin/feedbackCustomer");
   };
 
   return (
@@ -67,9 +70,7 @@ export default function SignIn() {
               className="w-full p-2 border rounded"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">
-                {errors?.email?.message as string}
-              </p>
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
             )}
           </div>
 
@@ -84,9 +85,7 @@ export default function SignIn() {
               className="w-full p-2 border rounded"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">
-                {errors?.password?.message as string}
-              </p>
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
             )}
           </div>
 

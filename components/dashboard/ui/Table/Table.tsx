@@ -35,7 +35,7 @@ export default function Table<T>({
         <tbody>
           {data.map((row, rowIndex) => (
             <tr key={rowIndex} className="hover:bg-gray-50">
-              {columns.map((column, columnIndex) => (
+              {columns.map((column) => (
                 <td
                   key={String(column.accessor)}
                   className="px-4 py-1 border-b text-gray-700"

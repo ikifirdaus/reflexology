@@ -4,9 +4,21 @@ import { NextResponse } from "next/server";
 import { Rating } from "@prisma/client";
 import { startOfDay, endOfDay } from "date-fns";
 
+// Tipe data untuk body yang diterima dari request
+type FeedbackBody = {
+  therapistId: string;
+  name: string;
+  contact: string;
+  cleanliness: number;
+  politeness: number;
+  pressure: number;
+  punctuality: number;
+  totalScore: number;
+};
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body: FeedbackBody = await req.json();
     console.log("BODY:", body);
 
     const {
@@ -96,8 +108,11 @@ export async function POST(req: Request) {
       message: "Feedback berhasil disimpan",
       feedback,
     });
-  } catch (error: any) {
-    console.error("Error saving feedback:", error?.message || error);
+  } catch (error) {
+    console.error(
+      "Error saving feedback:",
+      error instanceof Error ? error.message : error
+    );
     return NextResponse.json(
       { message: "Terjadi kesalahan saat menyimpan feedback." },
       { status: 500 }

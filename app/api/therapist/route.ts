@@ -5,6 +5,14 @@ import { join } from "path";
 import { randomUUID } from "crypto";
 import QRCode from "qrcode";
 
+// Definisikan tipe untuk filter where
+type WhereFilter = {
+  createdAt?: {
+    gte?: Date;
+    lte?: Date;
+  };
+};
+
 const uploadDir = join(process.cwd(), "public/profilePhoto");
 const qrDir = join(process.cwd(), "public/qrcode");
 
@@ -92,7 +100,7 @@ export async function GET(req: Request) {
     const fromDate = searchParams.get("fromDate")?.trim();
     const toDate = searchParams.get("toDate")?.trim();
 
-    const where: any = {};
+    const where: WhereFilter = {}; // Menggunakan tipe `WhereFilter` untuk `where`
 
     // Filter tanggal di Prisma (tetap gunakan database untuk ini)
     if (fromDate || toDate) {

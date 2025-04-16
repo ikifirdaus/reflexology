@@ -9,6 +9,14 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Definisikan tipe untuk filter where
+type WhereFilter = {
+  createdAt?: {
+    gte?: Date;
+    lte?: Date;
+  };
+};
+
 export async function POST(request: Request) {
   try {
     const body: FormValues = await request.json();
@@ -40,7 +48,7 @@ export async function GET(req: Request) {
     const fromDate = searchParams.get("fromDate")?.trim();
     const toDate = searchParams.get("toDate")?.trim();
 
-    const where: any = {};
+    const where: WhereFilter = {}; // Menggunakan tipe `WhereFilter` untuk `where`
 
     // Filter tanggal di Prisma (tetap gunakan database untuk ini)
     if (fromDate || toDate) {

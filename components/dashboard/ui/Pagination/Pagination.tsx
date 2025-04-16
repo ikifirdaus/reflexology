@@ -25,7 +25,8 @@ const Pagination: FC<PaginationProps> = ({
   const totalPages = Math.ceil(totalItems / perPage);
 
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams as any);
+    // Tidak perlu 'any', cukup menggunakan searchParams yang sudah ada
+    const params = new URLSearchParams(searchParams as URLSearchParams);
     params.set("page", newPage.toString());
     router.push(`${pathname}?${params.toString()}`);
   };

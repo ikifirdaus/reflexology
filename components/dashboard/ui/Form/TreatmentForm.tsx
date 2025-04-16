@@ -25,7 +25,6 @@ type TreatmentFormProps = {
 export default function TreatmentForm({ treatment }: TreatmentFormProps) {
   const {
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({

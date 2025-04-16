@@ -14,7 +14,8 @@ const SearchColumn = () => {
   const [toDate, setToDate] = useState(searchParams.get("toDate") || "");
 
   const handleSearch = () => {
-    const params = new URLSearchParams(searchParams as any);
+    // Tidak perlu menggunakan 'any', cukup menggunakan URLSearchParams
+    const params = new URLSearchParams(searchParams as URLSearchParams);
     params.set("query", query);
     params.set("fromDate", fromDate);
     params.set("toDate", toDate);

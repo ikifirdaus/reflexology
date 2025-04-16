@@ -26,7 +26,6 @@ type UserFormProps = {
 export default function UserForm({ user }: UserFormProps) {
   const {
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({

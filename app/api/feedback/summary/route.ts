@@ -2,6 +2,26 @@ import { startOfMonth, endOfMonth } from "date-fns";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Definisikan tipe untuk data feedback
+type FeedbackWithTherapist = {
+  therapistId: number;
+  result: number;
+  therapist: {
+    id: number;
+    name: string;
+    branch: string;
+  };
+};
+
+type SummaryEntry = {
+  therapist: {
+    id: number;
+    name: string;
+    branch: string;
+  };
+  totalResult: number;
+};
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const month = searchParams.get("month");
@@ -16,7 +36,7 @@ export async function GET(req: Request) {
   const start = startOfMonth(new Date(`${month}-01`));
   const end = endOfMonth(new Date(`${month}-01`));
 
-  const feedbacks = await prisma.feedback.findMany({
+  const feedbacks: FeedbackWithTherapist[] = await prisma.feedback.findMany({
     where: {
       createdAt: {
         gte: start,
@@ -41,7 +61,7 @@ export async function GET(req: Request) {
     },
   });
 
-  const summaryMap = new Map<number, { therapist: any; totalResult: number }>();
+  const summaryMap = new Map<number, SummaryEntry>();
 
   for (const feedback of feedbacks) {
     const { therapistId, result, therapist } = feedback;

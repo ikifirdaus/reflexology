@@ -1,12 +1,15 @@
 import HeaderFeedback from "./HeaderFeedback";
 import FooterFeedback from "./FooterFeedback";
+import Image from "next/image";
 
 const FeedbackLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="relative min-h-screen flex flex-col text-gray-800">
       {/* Background Image */}
-      <img
+      <Image
         src="/bg-texture.jpg"
+        width={2000}
+        height={1333}
         alt="Background"
         className="absolute inset-0 w-full h-full object-cover object-center z-0"
       />

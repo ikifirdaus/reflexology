@@ -13,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import SearchColumn from "@/components/dashboard/ui/Search/SearchColumn";
 import TableSkeleton from "@/components/dashboard/ui/TableSkeleton/TableSkeleton";
 import Skeleton from "@/components/dashboard/ui/Skeleton/Skeleton";
+import Image from "next/image";
 
 interface Therapist {
   id: number;
@@ -87,8 +88,10 @@ const TherapistPage = () => {
       accessor: "image",
       cell: (row: Therapist) => (
         <div>
-          <img
+          <Image
             src={`/profilePhoto/${row.image}`}
+            width={40}
+            height={40}
             alt={row.name}
             className="w-10 h-10 rounded-full cursor-pointer object-cover"
             onClick={() => {

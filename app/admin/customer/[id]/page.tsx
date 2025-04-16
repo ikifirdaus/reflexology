@@ -1,7 +1,6 @@
 import CardMain from "@/components/dashboard/layouts/CardMain";
 import Layout from "@/components/dashboard/layouts/Layout";
 import TitleBreadcrumb from "@/components/dashboard/layouts/TitleBreadcrumb";
-import ArticleForm from "@/components/dashboard/ui/Form/ArticleForm";
 import CustomerForm from "@/components/dashboard/ui/Form/CustomerForm";
 import { PrismaClient } from "@prisma/client";
 

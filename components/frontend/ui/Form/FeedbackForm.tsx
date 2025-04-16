@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Smile, Laugh, Meh, Frown, Angry } from "lucide-react";
 
 import { Toast } from "@/components/dashboard/ui/Toast/Toast";
+import Image from "next/image";
 
 type FeedbackValue = 1 | 2 | 3 | 4 | 5;
 
@@ -209,8 +210,10 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
 
             {therapistData && (
               <div className="flex items-center gap-4 mb-4">
-                <img
+                <Image
                   src={therapistData.image || "/default-avatar.png"} // default image jika tidak ada
+                  width={40}
+                  height={40}
                   alt={therapistData.name}
                   className="w-16 h-16 rounded-full object-cover"
                 />

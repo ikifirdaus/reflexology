@@ -40,7 +40,15 @@ export async function GET(req: Request) {
     const fromDate = searchParams.get("fromDate")?.trim();
     const toDate = searchParams.get("toDate")?.trim();
 
-    const where: any = {};
+    // Tipe data untuk filter tanggal
+    interface DateFilter {
+      gte?: Date;
+      lte?: Date;
+    }
+
+    const where: {
+      createdAt?: DateFilter;
+    } = {};
 
     // Filter tanggal di Prisma (tetap gunakan database untuk ini)
     if (fromDate || toDate) {

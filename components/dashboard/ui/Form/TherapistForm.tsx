@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image"; // Import Image component from next/image
 
 import { Input } from "../Input/Input";
 import { ButtonSubmit } from "../Button/ButtonSubmit";
@@ -36,7 +37,6 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -44,7 +44,6 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
       ? {
           name: therapist.name,
           branch: therapist.branch,
-          // qrCodeUrl: therapist.qrCodeUrl || "",
         }
       : undefined,
   });
@@ -60,12 +59,11 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("branch", data.branch);
-    // if (data.qrCodeUrl) formData.append("qrCodeUrl", data.qrCodeUrl);
     if (data.image && data.image.length > 0)
       formData.append("image", data.image[0]);
 
     if (therapist?.image && data.image?.length > 0) {
-      const oldFileName = therapist.image.split("/").pop(); // Ambil nama file lama
+      const oldFileName = therapist.image.split("/").pop();
       if (oldFileName) formData.append("oldImage", oldFileName);
     }
 
@@ -133,15 +131,6 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
           )}
         </div>
 
-        {/* <div className="flex flex-col">
-          <label htmlFor="qrCodeUrl">QR Code URL</label>
-          <Input
-            {...register("qrCodeUrl")}
-            id="qrCodeUrl"
-            placeholder="Enter QR code URL"
-          />
-        </div> */}
-
         <div className="flex flex-col">
           <label htmlFor="image">Profile Image</label>
           <Input
@@ -156,10 +145,12 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
           />
 
           {previewUrl && (
-            <img
+            <Image
               src={previewUrl}
               alt="Preview"
-              className="mt-2 w-32 h-32 object-cover rounded-full border"
+              width={128} // set width and height for the image
+              height={128}
+              className="mt-2 object-cover rounded-full border"
             />
           )}
         </div>

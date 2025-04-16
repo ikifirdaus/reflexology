@@ -21,6 +21,9 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
+// Tipe data dari schema
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 export default function Register() {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -29,11 +32,11 @@ export default function Register() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setError("");
 
     const res = await fetch("/api/register", {
@@ -74,9 +77,7 @@ export default function Register() {
               className="w-full p-2 border rounded"
             />
             {errors.name && (
-              <p className="text-red-500 text-sm">
-                {errors?.name?.message as string}
-              </p>
+              <p className="text-red-500 text-sm">{errors.name.message}</p>
             )}
           </div>
 
@@ -91,9 +92,7 @@ export default function Register() {
               className="w-full p-2 border rounded"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">
-                {errors?.email?.message as string}
-              </p>
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
             )}
           </div>
 
@@ -108,9 +107,7 @@ export default function Register() {
               className="w-full p-2 border rounded"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">
-                {errors?.password?.message as string}
-              </p>
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
             )}
           </div>
 
@@ -126,7 +123,7 @@ export default function Register() {
             />
             {errors.confirmPassword && (
               <p className="text-red-500 text-sm">
-                {errors?.confirmPassword?.message as string}
+                {errors.confirmPassword.message}
               </p>
             )}
           </div>

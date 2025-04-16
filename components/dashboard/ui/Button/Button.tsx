@@ -7,7 +7,7 @@ interface ButtonProps {
   url: ReactNode;
   icon: ReactNode;
   title: ReactNode;
-  className: String;
+  className: string; // Ubah dari String menjadi string
 }
 
 export default function Button({ url, icon, title, className }: ButtonProps) {
