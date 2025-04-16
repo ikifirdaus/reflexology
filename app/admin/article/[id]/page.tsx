@@ -6,12 +6,16 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+interface Params {
+  id: string;
+}
+
 interface Props {
-  params: { id: string };
+  params: Params;
 }
 
 export default async function EditArticlePage({ params }: Props) {
-  const { id } = await Promise.resolve(params);
+  const { id } = params; // `params` is directly accessible
 
   const articleId = Number(id);
 
