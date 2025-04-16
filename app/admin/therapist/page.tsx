@@ -107,8 +107,10 @@ const TherapistPage = () => {
       accessor: "qrCodeUrl",
       cell: (row: Therapist) => (
         <div className="flex items-center gap-2">
-          <img
+          <Image
             src={`/qrcode/${row.qrCodeUrl}`}
+            width={40}
+            height={40}
             alt={row.name}
             className="w-10 h-10 rounded-full cursor-pointer object-cover"
             onClick={() => {

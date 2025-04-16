@@ -33,7 +33,7 @@ export default function UserForm({ user }: UserFormProps) {
       ? {
           name: user.name,
           email: user.email,
-          role: user.role as "ADMIN" | "USER",
+          role: user.role as "ADMIN" | "USER", // Ensure that role is either "ADMIN" or "USER"
         }
       : undefined,
     resolver: zodResolver(formSchema),
