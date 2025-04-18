@@ -58,7 +58,7 @@ export default function POSPage() {
       ) : (
         <TitleBreadcrumb
           title="Point of Sale"
-          items={[{ text: "Dashboard", link: "/admin" }, { text: "POS" }]}
+          items={[{ text: "POS", link: "/admin" }]}
         />
       )}
 

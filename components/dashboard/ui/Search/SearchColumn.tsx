@@ -37,14 +37,14 @@ const SearchColumn = () => {
         type="date"
         value={fromDate}
         onChange={(e) => setFromDate(e.target.value)}
-        className="px-3 py-1 text-base border text-gray-400 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-3 py-1 text-base border text-gray-400 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <p className="flex items-center">to:</p>
       <input
         type="date"
         value={toDate}
         onChange={(e) => setToDate(e.target.value)}
-        className="px-3 py-1 text-base border text-gray-400 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-3 py-1 text-base border text-gray-400 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
         onClick={handleSearch}
