@@ -109,13 +109,15 @@ const ArticlePage = () => {
       )}
 
       <CardMain>
-        <div className="flex md:items-center md:justify-between flex-col md:flex-row">
-          <div className="flex flex-col md:flex-row gap-2">
+        <div className="flex md:items-center md:justify-between flex-col md:flex-row w-full">
+          <div className="flex flex-col md:flex-row gap-2 w-full">
             {loading ? (
               <Skeleton className="h-10 w-full md:w-64 mb-2" />
             ) : (
               <>
-                <SearchColumn />
+                <div className="w-full">
+                  <SearchColumn />
+                </div>
                 <div className="flex mt-2 md:mt-0">
                   <Button
                     className=""
