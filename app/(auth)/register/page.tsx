@@ -8,7 +8,6 @@ import { useState } from "react";
 import { Input } from "@/components/dashboard/ui/Input/Input";
 import Link from "next/link";
 
-// Skema validasi dengan Zod
 const registerSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -21,7 +20,6 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-// Tipe data dari schema
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function Register() {
@@ -55,92 +53,98 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-2">Register your account!</h1>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-md border">
+        <h1 className="text-2xl font-bold mb-4 text-center">
+          Register your account
+        </h1>
+
         {error && (
-          <p className="text-red-500 bg-red-200 rounded p-2 mb-2 text-center">
+          <p className="text-red-500 bg-red-100 rounded p-2 mb-4 text-center">
             {error}
           </p>
         )}
-        <hr className="mb-2" />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-          <div className="flex flex-col">
-            <label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">
               Name<sup className="text-red-500">*</sup>
             </label>
             <Input
               type="text"
               placeholder="ex: John Doe"
               {...register("name")}
-              className="w-full p-2 border rounded"
+              className="p-2 border rounded"
             />
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 
-          <div className="flex flex-col">
-            <label>
+          <div>
+            <label className="block text-sm font-medium mb-1">
               Email<sup className="text-red-500">*</sup>
             </label>
             <Input
               type="email"
               placeholder="ex: user@example.com"
               {...register("email")}
-              className="w-full p-2 border rounded"
+              className="p-2 border rounded"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col">
-            <label>
+          <div>
+            <label className="block text-sm font-medium mb-1">
               Password<sup className="text-red-500">*</sup>
             </label>
             <Input
               type="password"
               placeholder="********"
               {...register("password")}
-              className="w-full p-2 border rounded"
+              className="p-2 border rounded"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col">
-            <label>
+          <div>
+            <label className="block text-sm font-medium mb-1">
               Confirm Password<sup className="text-red-500">*</sup>
             </label>
             <Input
               type="password"
               placeholder="********"
               {...register("confirmPassword")}
-              className="w-full p-2 border rounded"
+              className="p-2 border rounded"
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">
+              <p className="text-red-500 text-sm mt-1">
                 {errors.confirmPassword.message}
               </p>
             )}
           </div>
-          <hr className="mb-2" />
 
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
           >
             Register
           </button>
         </form>
-        <div className="mt-2 text-center">
+
+        <div className="mt-4 text-center text-sm">
           <p>
             Already have an account?{" "}
-            <Link href="/signin" className="text-primary">
-              <span className="text-blue-500 hover:text-blue-600">Sign in</span>
+            <Link href="/signin" className="text-blue-500 hover:underline">
+              Sign in
             </Link>
           </p>
         </div>

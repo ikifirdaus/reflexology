@@ -193,21 +193,24 @@ const TherapistPage = () => {
             </div>
 
             {showImageModal && selectedImage && (
-              <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-                <div className="bg-white p-4 rounded-lg shadow-lg relative">
+              <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+                <div className="bg-white p-4 rounded-lg shadow-lg relative w-full max-w-[90vw] md:max-w-[500px] max-h-[90vh] overflow-auto">
                   <button
                     onClick={() => setShowImageModal(false)}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
                   >
                     ✕
                   </button>
-                  <Image
-                    src={selectedImage}
-                    width={40}
-                    height={40}
-                    alt="Full View"
-                    className="max-w-[90vw] max-h-[80vh] object-contain"
-                  />
+                  <div className="flex justify-center items-center">
+                    <Image
+                      src={selectedImage}
+                      alt="Full View"
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      className="w-full h-auto object-contain rounded"
+                    />
+                  </div>
                 </div>
               </div>
             )}
