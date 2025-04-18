@@ -24,7 +24,7 @@ const SearchColumn = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-2">
+    <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
       <input
         type="text"
         placeholder="Search..."
@@ -32,23 +32,32 @@ const SearchColumn = () => {
         onChange={(e) => setQuery(e.target.value)}
         className="pl-3 pr-4 py-1 w-full border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-      <p className="flex items-center">from:</p>
-      <input
-        type="date"
-        value={fromDate}
-        onChange={(e) => setFromDate(e.target.value)}
-        className="w-full px-3 py-1 text-base border text-gray-400 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <p className="flex items-center">to:</p>
-      <input
-        type="date"
-        value={toDate}
-        onChange={(e) => setToDate(e.target.value)}
-        className="w-full px-3 py-1 text-base border text-gray-400 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+
+      <div className="flex flex-col md:flex-row gap-2 w-full">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full">
+          <label className="text-sm text-slate-600">From:</label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="w-full px-3 py-1 text-base border text-gray-600 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full">
+          <label className="text-sm text-slate-600">To:</label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="w-full px-3 py-1 text-base border text-gray-600 border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
       <button
         onClick={handleSearch}
-        className=" text-sm font-medium text-slate-500 hover:bg-primary hover:bg-slate-200 hover:text-white flex items-center justify-center border md:w-28 h-9 rounded w-full"
+        className="text-sm font-medium text-slate-500 hover:bg-primary hover:bg-slate-200 hover:text-white flex items-center justify-center border md:w-28 h-9 rounded w-full"
       >
         <SearchIcon width={18} height={18} />
       </button>
