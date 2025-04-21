@@ -92,6 +92,48 @@ export async function PATCH(request: Request) {
   }
 }
 
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const therapistId = url.pathname.split("/").pop();
+
+    if (!therapistId) {
+      return NextResponse.json(
+        { error: "Therapist ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const id = Number(therapistId);
+
+    const therapist = await prisma.therapist.findUnique({
+      where: { id },
+      select: {
+        name: true,
+        image: true,
+      },
+    });
+
+    if (!therapist) {
+      return NextResponse.json(
+        { error: "Therapist not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      name: therapist.name,
+      imageUrl: therapist.image,
+    });
+  } catch (error) {
+    console.error("Error fetching therapist:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch therapist" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url);

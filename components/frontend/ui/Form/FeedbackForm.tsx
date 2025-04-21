@@ -211,12 +211,19 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
             {therapistData && (
               <div className="flex items-center gap-4 mb-4">
                 <Image
-                  src={therapistData.image || "/default-avatar.png"} // default image jika tidak ada
-                  width={40}
-                  height={40}
+                  src={
+                    therapistData.image?.startsWith("http")
+                      ? therapistData.image
+                      : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
+                          therapistData.image || "default-avatar.png"
+                        }`
+                  }
+                  width={64}
+                  height={64}
                   alt={therapistData.name}
                   className="w-16 h-16 rounded-full object-cover"
                 />
+
                 {/* Nama dan ID tetap di kiri */}
                 <div className="text-left">
                   <p className="font-semibold text-lg">{therapistData.name}</p>
