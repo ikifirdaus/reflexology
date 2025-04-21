@@ -30,8 +30,9 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
     message: string;
     type: "success" | "error";
   } | null>(null);
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    therapist?.image ? `/profilePhoto/${therapist.image}` : null
+    therapist?.image ?? null
   );
 
   const {
@@ -150,6 +151,7 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
               alt="Preview"
               width={128} // set width and height for the image
               height={128}
+              priority
               className="mt-2 object-cover rounded-full border"
             />
           )}

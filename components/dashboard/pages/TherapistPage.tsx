@@ -86,41 +86,53 @@ const TherapistPage = () => {
     {
       header: "Foto Profile",
       accessor: "image",
-      cell: (row: Therapist) => (
-        <div>
-          <Image
-            src={`/profilePhoto/${row.image}`}
-            width={40}
-            height={40}
-            alt={row.name}
-            className="w-10 h-10 rounded-full cursor-pointer object-cover"
-            onClick={() => {
-              setSelectedImage(`/profilePhoto/${row.image}`);
-              setShowImageModal(true);
-            }}
-          />
-        </div>
-      ),
+      cell: (row: Therapist) => {
+        const imageUrl = row.image.startsWith("http")
+          ? row.image
+          : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${row.image}`;
+        return (
+          <div>
+            <Image
+              src={imageUrl}
+              width={40}
+              height={40}
+              alt={row.name}
+              className="w-10 h-10 rounded-full cursor-pointer object-cover"
+              onClick={() => {
+                setSelectedImage(imageUrl);
+                setShowImageModal(true);
+              }}
+            />
+          </div>
+        );
+      },
     },
+
     {
       header: "QrCode",
       accessor: "qrCodeUrl",
-      cell: (row: Therapist) => (
-        <div className="flex items-center gap-2">
-          <Image
-            src={`/qrcode/${row.qrCodeUrl}`}
-            width={40}
-            height={40}
-            alt={row.name}
-            className="w-10 h-10 rounded-full cursor-pointer object-cover"
-            onClick={() => {
-              setSelectedImage(`/qrcode/${row.qrCodeUrl}`);
-              setShowImageModal(true);
-            }}
-          />
-        </div>
-      ),
+      cell: (row: Therapist) => {
+        const qrCodeUrl = row.qrCodeUrl.startsWith("http")
+          ? row.qrCodeUrl
+          : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${row.qrCodeUrl}`;
+        return (
+          <div className="flex items-center gap-2">
+            <Image
+              src={qrCodeUrl}
+              width={40}
+              height={40}
+              alt={row.name}
+              className="w-10 h-10 rounded-full cursor-pointer object-cover"
+              onClick={() => {
+                setSelectedImage(qrCodeUrl);
+                setShowImageModal(true);
+              }}
+            />
+          </div>
+        );
+      },
     },
+
     {
       header: "Action",
       accessor: "action",

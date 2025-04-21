@@ -1,14 +1,23 @@
 import { prisma } from "@/lib/prisma";
-import { writeFile, unlink } from "fs/promises";
-import { join } from "path";
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
 
-// Folder penyimpanan gambar
-const uploadDir = join(process.cwd(), "public/profilePhoto");
+import { v2 as cloudinary } from "cloudinary";
 
-const qrDir = join(process.cwd(), "public/qrcode");
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
+
+function extractPublicId(imageUrl: string) {
+  const match = imageUrl.match(/\/therapists\/([^/.]+)/);
+  return match ? `therapists/${match[1]}` : null;
+}
+
+function extractQRCodePublicId(imageUrl: string) {
+  const match = imageUrl.match(/\/qrcode\/([^/.]+)/);
+  return match ? `qrcode/${match[1]}` : null;
+}
 
 export async function PATCH(request: Request) {
   try {
@@ -33,7 +42,6 @@ export async function PATCH(request: Request) {
     let imageUrl: string | undefined;
 
     if (file && typeof file !== "string") {
-      // Validasi ukuran maksimal 2MB
       const maxSize = 2 * 1024 * 1024;
       if (file.size > maxSize) {
         return NextResponse.json(
@@ -42,21 +50,25 @@ export async function PATCH(request: Request) {
         );
       }
 
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const ext = file.name.split(".").pop();
-      const fileName = `${randomUUID()}.${ext}`;
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-      imageUrl = fileName;
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const base64 = buffer.toString("base64");
+      const dataUrl = `data:${file.type};base64,${base64}`;
 
-      // Hapus gambar lama
+      const uploadRes = await cloudinary.uploader.upload(dataUrl, {
+        folder: "therapists",
+      });
+
+      imageUrl = uploadRes.secure_url;
+
+      // Hapus gambar lama dari Cloudinary
       if (oldImage) {
-        const oldPath = join(uploadDir, oldImage);
-        try {
-          await unlink(oldPath);
-        } catch (err) {
-          console.warn("Gagal hapus gambar lama:", err);
+        const publicId = extractPublicId(oldImage);
+        if (publicId) {
+          try {
+            await cloudinary.uploader.destroy(publicId);
+          } catch (err) {
+            console.warn("Gagal hapus gambar lama di Cloudinary:", err);
+          }
         }
       }
     }
@@ -94,7 +106,6 @@ export async function DELETE(request: Request) {
 
     const id = Number(therapistId);
 
-    // Ambil data untuk mengetahui file yang akan dihapus
     const therapist = await prisma.therapist.findUnique({
       where: { id },
     });
@@ -106,26 +117,38 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Hapus data dari DB
     await prisma.therapist.delete({ where: { id } });
 
-    // Hapus gambar profil
+    // Hapus foto profil dari Cloudinary
     if (therapist.image) {
-      const imagePath = join(uploadDir, therapist.image);
-      try {
-        await unlink(imagePath);
-      } catch (err) {
-        console.warn("Gagal hapus foto profil:", err);
+      const publicId = extractPublicId(therapist.image);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+          console.warn("Gagal hapus foto profil di Cloudinary:", err);
+        }
       }
     }
 
-    // Hapus QR code
+    // Hapus QR code dari Cloudinary atau lokal
     if (therapist.qrCodeUrl) {
-      const qrPath = join(qrDir, therapist.qrCodeUrl);
-      try {
-        await unlink(qrPath);
-      } catch (err) {
-        console.warn("Gagal hapus QR code:", err);
+      if (therapist.qrCodeUrl.includes("cloudinary.com")) {
+        const qrPublicId = extractQRCodePublicId(therapist.qrCodeUrl);
+        if (qrPublicId) {
+          try {
+            await cloudinary.uploader.destroy(qrPublicId);
+          } catch (err) {
+            console.warn("Gagal hapus QR code di Cloudinary:", err);
+          }
+        }
+      } else {
+        const qrPath = `${process.cwd()}/public/qrcode/${therapist.qrCodeUrl}`;
+        try {
+          await import("fs/promises").then((fs) => fs.unlink(qrPath));
+        } catch (err) {
+          console.warn("Gagal hapus QR code lokal:", err);
+        }
       }
     }
 
@@ -140,26 +163,4 @@ export async function DELETE(request: Request) {
       { status: 500 }
     );
   }
-}
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const therapist = await prisma.therapist.findUnique({
-    where: { id: Number(params.id) },
-    select: { name: true, image: true },
-  });
-
-  if (!therapist) {
-    return new Response("Therapist not found", { status: 404 });
-  }
-
-  // Pastikan image URL dikembalikan dengan benar
-  const therapistWithImage = {
-    ...therapist,
-    imageUrl: therapist.image ? `/profilePhoto/${therapist.image}` : null,
-  };
-
-  return NextResponse.json(therapistWithImage);
 }

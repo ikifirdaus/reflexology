@@ -1,11 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { randomUUID } from "crypto";
 import QRCode from "qrcode";
+import cloudinary from "@/lib/cloudinary";
 
-// Definisikan tipe untuk filter where
 type WhereFilter = {
   createdAt?: {
     gte?: Date;
@@ -13,25 +10,21 @@ type WhereFilter = {
   };
 };
 
-const uploadDir = join(process.cwd(), "public/profilePhoto");
-const qrDir = join(process.cwd(), "public/qrcode");
-
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
 
     const name = formData.get("name") as string;
     const branch = formData.get("branch") as string;
-    const file = formData.get("image") as File;
+    const file = formData.get("image");
 
-    if (!name || !branch || !file || typeof file === "string") {
+    if (!name || !branch || !file || !(file instanceof File)) {
       return NextResponse.json(
         { error: "Missing required fields." },
         { status: 400 }
       );
     }
 
-    // Validasi ukuran maksimal 2MB
     const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
@@ -40,46 +33,59 @@ export async function POST(request: Request) {
       );
     }
 
-    // Simpan gambar profil
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const ext = file.name.split(".").pop();
-    const fileName = `${randomUUID()}.${ext}`;
-    const filePath = join(uploadDir, fileName);
 
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(filePath, buffer);
+    const uploadResult = await new Promise<{ secure_url: string }>(
+      (resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "therapist" }, (error, result) => {
+            if (error || !result) return reject(error);
+            resolve(result);
+          })
+          .end(buffer);
+      }
+    );
 
-    // Buat data therapist (tanpa qrCodeUrl dulu)
     const newTherapist = await prisma.therapist.create({
       data: {
         name,
         branch,
-        image: fileName,
+        image: uploadResult.secure_url,
       },
     });
 
-    // Generate URL feedback berdasarkan ID
     const feedbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/feedback/${newTherapist.id}`;
-    const qrCodeFileName = `${newTherapist.id}.png`;
-    const qrCodePath = join(qrDir, qrCodeFileName);
-
-    await mkdir(qrDir, { recursive: true });
-    await QRCode.toFile(qrCodePath, feedbackUrl, {
+    const qrDataUrl = await QRCode.toDataURL(feedbackUrl, {
       width: 500,
       margin: 2,
     });
+    const qrBuffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
 
-    // Update qrCodeUrl di database
+    const qrUploadResult = await new Promise<{ secure_url: string }>(
+      (resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "qrcode" }, (error, result) => {
+            if (error || !result) return reject(error);
+            resolve(result);
+          })
+          .end(qrBuffer);
+      }
+    );
+
     await prisma.therapist.update({
       where: { id: newTherapist.id },
       data: {
-        qrCodeUrl: qrCodeFileName,
+        qrCodeUrl: qrUploadResult.secure_url,
       },
     });
 
     return NextResponse.json(
-      { ...newTherapist, qrCodeUrl: qrCodeFileName },
+      {
+        ...newTherapist,
+        image: uploadResult.secure_url,
+        qrCodeUrl: qrUploadResult.secure_url,
+      },
       { status: 201 }
     );
   } catch (error) {
@@ -100,9 +106,8 @@ export async function GET(req: Request) {
     const fromDate = searchParams.get("fromDate")?.trim();
     const toDate = searchParams.get("toDate")?.trim();
 
-    const where: WhereFilter = {}; // Menggunakan tipe `WhereFilter` untuk `where`
+    const where: WhereFilter = {};
 
-    // Filter tanggal di Prisma (tetap gunakan database untuk ini)
     if (fromDate || toDate) {
       where.createdAt = {};
       if (fromDate) where.createdAt.gte = new Date(fromDate);
@@ -113,34 +118,30 @@ export async function GET(req: Request) {
       delete where.createdAt;
     }
 
-    // Ambil semua data dulu, lalu filter di kode
     let therapists = await prisma.therapist.findMany({
       where,
       orderBy: { createdAt: "desc" },
     });
 
-    // Filtering di kode
     if (query) {
-      const lowerCaseQuery = query.toLowerCase();
+      const lowerQuery = query.toLowerCase();
       therapists = therapists.filter((therapist) => {
-        const name = therapist.name || "";
-        const branch = therapist.branch || "";
-        const image = therapist.image || "";
-        const qrCodeUrl = therapist.qrCodeUrl || "";
+        const name = therapist.name ?? "";
+        const branch = therapist.branch ?? "";
+        const image = therapist.image ?? "";
+        const qrCodeUrl = therapist.qrCodeUrl ?? "";
 
         return (
-          name.toLowerCase().includes(lowerCaseQuery) ||
-          branch.toLowerCase().includes(lowerCaseQuery) ||
-          image.toLowerCase().includes(lowerCaseQuery) ||
-          qrCodeUrl.toLowerCase().includes(lowerCaseQuery)
+          name.toLowerCase().includes(lowerQuery) ||
+          branch.toLowerCase().includes(lowerQuery) ||
+          image.toLowerCase().includes(lowerQuery) ||
+          qrCodeUrl.toLowerCase().includes(lowerQuery)
         );
       });
     }
 
-    // Hitung total setelah filtering
     const totalItems = therapists.length;
 
-    // Pagination setelah filtering
     const paginatedTherapists = therapists.slice(
       (page - 1) * perPage,
       page * perPage
