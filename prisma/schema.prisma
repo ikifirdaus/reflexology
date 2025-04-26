@@ -67,7 +67,7 @@ model Therapist {
 model Customer {
   id        Int        @id @default(autoincrement())
   name      String
-  contact   String     @unique
+  contact   String     
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   feedbacks Feedback[]

@@ -17,7 +17,7 @@ const Sidebar = () => {
       path: "/admin/feedbackCustomer",
     },
     { icon: UserSquare2, label: "Therapist", path: "/admin/therapist" },
-    { icon: BookUser, label: "Customer", path: "/admin/customer" },
+    { icon: BookUser, label: "Cust Reserv", path: "/admin/customer" },
     {
       icon: MenuSquare,
       label: "Treatment",

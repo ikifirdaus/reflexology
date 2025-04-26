@@ -12,6 +12,10 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        title: ["Junicode", "serif"],
+        body: ["AvenirLTStd-Medium", "sans-serif"],
+      },
     },
   },
   plugins: [],

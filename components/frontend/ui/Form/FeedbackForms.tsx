@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Smile, Laugh, Meh, Frown, Angry } from "lucide-react";
-import Image from "next/image";
+
 import { Toast } from "@/components/dashboard/ui/Toast/Toast";
+import Image from "next/image";
 
 type FeedbackValue = 1 | 2 | 3 | 4 | 5;
 
@@ -21,7 +22,23 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
   const [therapistData, setTherapistData] = useState<TherapistData | null>(
     null
   );
+
+  useEffect(() => {
+    const fetchTherapist = async () => {
+      try {
+        const res = await fetch(`/api/therapist/${therapistId}`);
+        const data = await res.json();
+        setTherapistData({ name: data.name, image: data.imageUrl });
+      } catch (error) {
+        console.error("Gagal mengambil data terapis", error);
+      }
+    };
+
+    fetchTherapist();
+  }, [therapistId]);
+
   const [step, setStep] = useState(1);
+
   const [customerName, setCustomerName] = useState("");
   const [customerContact, setCustomerContact] = useState("");
   const [toast, setToast] = useState<{
@@ -38,25 +55,15 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
 
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchTherapist = async () => {
-      try {
-        const res = await fetch(`/api/therapist/${therapistId}`);
-        const data = await res.json();
-        setTherapistData({ name: data.name, image: data.imageUrl });
-      } catch (error) {
-        console.error("Gagal mengambil data terapis", error);
-      }
-    };
-    fetchTherapist();
-  }, [therapistId]);
-
   const handleFeedbackChange = (
     key: keyof typeof feedback,
     value: FeedbackValue
   ) => {
     setFeedback((prev) => ({ ...prev, [key]: value }));
-    setTimeout(() => setStep((prev) => prev + 1), 200);
+    // Auto next step setelah pilih feedback
+    setTimeout(() => {
+      setStep((prev) => prev + 1);
+    }, 200); // beri delay kecil agar animasi klik terasa
   };
 
   const nextStep = () => setStep((prev) => prev + 1);
@@ -72,7 +79,10 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
           therapistId,
           name: customerName,
           contact: customerContact,
-          ...feedback,
+          cleanliness: feedback.cleanliness,
+          politeness: feedback.politeness,
+          pressure: feedback.pressure,
+          punctuality: feedback.punctuality,
           totalScore,
         }),
         headers: {
@@ -85,7 +95,10 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
           message: "Terima kasih atas feedback Anda!",
           type: "success",
         });
-        setTimeout(() => router.push("/feedback/thanks"), 2000);
+
+        setTimeout(() => {
+          router.push("/feedback/thanks");
+        }, 2000);
       } else {
         const data = await res.json().catch(() => null);
         console.error("Error:", data || "Unknown error");
@@ -114,136 +127,81 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
   const currentKey = feedbackKeys[step - 2];
 
   return (
-    <div className="max-w-md mx-auto p-4 text-[#442D18]">
-      <div className="text-center mb-1">
-        {step === 1 ? (
-          <>
-            <h1 className="font-title text-2xl uppercase mb-1">
-              THERAPIST FEEDBACK FORM
-            </h1>
-            <p className="font-body text-base text-[14px] mb-1">
-              Pendapatmu sangat berarti, bantu Sendja jadi lebih baik dengan
-              memberikan feedback pada terapis kami.
-            </p>
-            <p className="font-body text-[12px] italic text-[#A2968C]/80">
-              Please help Sendja improve by giving feedback to our therapists.
-            </p>
-          </>
-        ) : (
-          therapistData && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-full aspect-[4/3] overflow-hidden rounded-lg shadow-sm">
-                <Image
-                  src={
-                    therapistData.image?.startsWith("http")
-                      ? therapistData.image
-                      : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
-                          therapistData.image || "default-avatar.png"
-                        }`
-                  }
-                  alt={therapistData.name}
-                  width={400}
-                  height={300}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="text-center text-2xl">
-                <p className="font-title text-[#A2968C]">
-                  Therapist No: {therapistId}
-                </p>
-                <p className="font-title uppercase">{therapistData.name}</p>
-              </div>
-            </div>
-          )
-        )}
+    <div className="max-w-md mx-auto p-4">
+      <div className="text-center mb-4">
+        <p className="font-bold mb-2">THERAPIST FEEDBACK FORM</p>
+        <p className="mb-2 text-[14px]">
+          Pendapatmu sangat berarti, bantu Sendja jadi lebih baik dengan
+          memberikan feedback pada terapis kami.
+        </p>
+        <p className="text-[12px] italic text-slate-500">
+          Please help Sendja improve by giving feedback to our therapists.
+        </p>
       </div>
+      <hr className="mb-3" />
 
-      <hr className="mb-4 mt-4" />
-
+      {/* Step 1 - Customer Info */}
       {step === 1 && (
         <>
+          {/* <h2 className="text-xl font-semibold mb-4">Isi Data Anda</h2> */}
           <input
             placeholder="Nama"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
-            className="font-body w-full mb-3 border border-[#A2968C] p-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#C26728] text-sm"
+            className="w-full mb-4 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             placeholder="No. Kontak (contoh: 0895xxxxxxxx)"
             value={customerContact}
             onChange={(e) => setCustomerContact(e.target.value)}
-            className="font-body w-full mb-4 border border-[#A2968C] p-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#C26728] text-sm"
+            className="w-full mb-4 border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             onClick={nextStep}
-            className="font-body bg-[#C26728] text-white px-4 py-3 rounded-lg w-full text-sm hover:bg-[#C26728]/80"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full text-sm hover:bg-blue-700"
           >
             Next
           </button>
         </>
       )}
 
+      {/* Step 2-5 - Feedback Steps */}
       {step >= 2 && step <= 5 && (
         <>
-          <h2 className="font-title text-2xl uppercase">
+          <h2 className="text-xl font-semibold mb-4">
             {
               [
-                "CLEANLINESS",
-                "POLITENESS",
-                "MASSAGE PRESSURE",
-                "MASSAGE TIMING",
+                "CLEANLINESS | Kebersihan Ruangan",
+                "POLITENESS | Sopan Santun",
+                "MASSAGE PRESSURE | Tekanan Pijat",
+                "MASSAGE TIMING | Ketepatan Waktu",
               ][step - 2]
             }
           </h2>
-          <p className="font-body text-[14px] text-base">
-            {
-              [
-                "Kebersihan ruangan dan penampilan terapis.",
-                "Greeting. Friendliness communication. Service.",
-                "Kenyamanan dalam tekanan pijat selama treatment.",
-                "Informasi mengenai waktu dimulai dan berakhir sesi pijat.",
-              ][step - 2]
-            }
-          </p>
-          <p className="font-body text-[12px] italic text-[#A2968C]/80 mb-4">
-            {
-              [
-                "Room cleanliness and therapist appearance.",
-                "Greeting and service attitude.",
-                "Massage pressure comfort.",
-                "Information about session start and end times.",
-              ][step - 2]
-            }
-          </p>
-
-          <div className="grid grid-cols-5 gap-3 mb-4">
-            {[5, 4, 3, 2, 1].map((value) => {
-              const isSelected = feedback[currentKey] === value;
-              return (
-                <button
-                  key={value}
-                  onClick={() =>
-                    handleFeedbackChange(currentKey, value as FeedbackValue)
-                  }
-                  className={`text-body flex flex-col items-center justify-center p-4 rounded-xl border text-sm transition-all active:scale-95
+          <div className="flex flex-col gap-3 mb-4">
+            {[5, 4, 3, 2, 1].map((value) => (
+              <button
+                key={value}
+                onClick={() =>
+                  handleFeedbackChange(currentKey, value as FeedbackValue)
+                }
+                className={`flex items-center gap-2 justify-start w-full px-4 py-2 border rounded-lg transition transform active:scale-95
                   ${
-                    isSelected
-                      ? "bg-[#F5E6DB] border-[#442D18]"
-                      : "hover:bg-[#F5E6DB]"
+                    feedback[currentKey] === value
+                      ? "bg-blue-100 border-blue-400"
+                      : "hover:bg-gray-100"
                   }`}
-                >
-                  <div className="text-2xl mb-1">{labels[5 - value].icon}</div>
-                  <span>{labels[5 - value].text}</span>
-                </button>
-              );
-            })}
+              >
+                {labels[5 - value].icon}
+                <span>{labels[5 - value].text}</span>
+              </button>
+            ))}
           </div>
-
           <hr className="mb-4" />
           <div className="flex justify-start">
             <button
               onClick={prevStep}
-              className="text-body text-sm underline text-[#A2968C]"
+              className="text-sm underline text-gray-600"
             >
               Back
             </button>
@@ -251,10 +209,12 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
         </>
       )}
 
+      {/* Step 6 - Summary */}
       {step === 6 && (
         <>
           <div className="flex flex-col items-center justify-center text-center">
-            {/* <h2 className="text-xl font-semibold mb-2">Ringkasan Feedback</h2>
+            <h2 className="text-xl font-semibold mb-2">Ringkasan Feedback</h2>
+
             {therapistData && (
               <div className="flex items-center gap-4 mb-4">
                 <Image
@@ -270,31 +230,31 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
                   alt={therapistData.name}
                   className="w-16 h-16 rounded-full object-cover"
                 />
+
+                {/* Nama dan ID tetap di kiri */}
                 <div className="text-left">
                   <p className="font-semibold text-lg">{therapistData.name}</p>
                   <p className="text-sm text-gray-500">ID: {therapistId}</p>
                 </div>
               </div>
-            )} */}
+            )}
 
-            <p className="text-body">
-              {/* <strong>Total Summary:</strong> {totalScore} */}
-              Kami menghargai waktu Anda. Silakan kirim feedback dengan menekan
-              tombol Submit di bawah.
+            <p>
+              <strong>Total Summary:</strong> {totalScore}
             </p>
           </div>
 
-          {/* <hr className="mt-2" /> */}
+          <hr className="mt-4" />
           <div className="flex justify-between mt-4">
             <button
               onClick={prevStep}
-              className="text-body text-sm underline text-[#A2968C]"
+              className="text-sm underline text-gray-600"
             >
               Back
             </button>
             <button
               onClick={handleSubmit}
-              className="text-body bg-[#C26728] text-white px-4 py-2 rounded-lg hover:bg-[#C26728]/80 text-sm"
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
             >
               Submit
             </button>
@@ -302,6 +262,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
         </>
       )}
 
+      {/* Toast */}
       {toast && (
         <Toast
           message={toast.message}

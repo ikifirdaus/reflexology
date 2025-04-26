@@ -79,7 +79,7 @@ const CustomerPage = () => {
     { header: "Name", accessor: "name" },
     { header: "Contact", accessor: "contact" },
     {
-      header: "CreatedAt",
+      header: "Reservation Date",
       accessor: "createdAt",
       cell: (row: Customer) => {
         const date = new Date(row.createdAt);
@@ -116,7 +116,7 @@ const CustomerPage = () => {
         <Skeleton className="h-8 w-48 mb-4" />
       ) : (
         <TitleBreadcrumb
-          title="Customer Data"
+          title="Customer Reservation Data"
           items={[{ text: "Customer", link: "/admin/customer" }]}
         />
       )}
