@@ -233,7 +233,10 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
                   }`}
                 >
                   <div className="text-2xl mb-1">{labels[5 - value].icon}</div>
-                  <span>{labels[5 - value].text}</span>
+                  {/* <span>{labels[5 - value].text}</span> */}
+                  <span className="text-[9px] sm:text-sm md:text-sm">
+                    {labels[5 - value].text}
+                  </span>
                 </button>
               );
             })}
