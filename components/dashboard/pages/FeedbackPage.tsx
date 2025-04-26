@@ -124,7 +124,7 @@ const FeedbackPage = () => {
       ),
     },
     {
-      header: "Pressure",
+      header: "Massage Pressure",
       accessor: "pressure",
       cell: (row: Feedback) => (
         <span
@@ -137,7 +137,7 @@ const FeedbackPage = () => {
       ),
     },
     {
-      header: "Punctuality",
+      header: "Massage Timing",
       accessor: "punctuality",
       cell: (row: Feedback) => (
         <span
