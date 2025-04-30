@@ -17,8 +17,8 @@ const FeedbackLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Overlay + Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         <HeaderFeedback />
-        <main className="flex items-center justify-center flex-1 px-4 py-8">
-          <div className="bg-white backdrop-blur-md p-6 rounded-2xl shadow-lg w-full max-w-xl">
+        <main className="flex items-center justify-center flex-1 px-12 py-8">
+          <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-lg w-full max-w-xl">
             {children}
           </div>
         </main>

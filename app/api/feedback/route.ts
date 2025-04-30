@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { Rating } from "@prisma/client";
 import { startOfDay, endOfDay } from "date-fns";
 
-// Tipe data untuk body yang diterima dari request
 type FeedbackBody = {
   therapistId: string;
   name: string;
@@ -19,7 +18,6 @@ type FeedbackBody = {
 export async function POST(req: Request) {
   try {
     const body: FeedbackBody = await req.json();
-    console.log("BODY:", body);
 
     const {
       therapistId,
@@ -35,10 +33,10 @@ export async function POST(req: Request) {
     const todayStart = startOfDay(new Date());
     const todayEnd = endOfDay(new Date());
 
-    // Cek apakah customer dengan nama dan contact yang sama, terdaftar hari ini
-    const existingCustomer = await prisma.customer.findFirst({
+    // 🔍 Cek apakah customer sudah ada hari ini berdasarkan nama + contact
+    let customer = await prisma.customer.findFirst({
       where: {
-        name,
+        // name,
         contact,
         createdAt: {
           gte: todayStart,
@@ -47,20 +45,20 @@ export async function POST(req: Request) {
       },
     });
 
-    if (!existingCustomer) {
-      return NextResponse.json(
-        {
-          message:
-            "Data tidak ditemukan. Anda hanya bisa mengisi feedback jika sudah terdaftar hari ini dengan nama dan nomor yang sama.",
+    // ❌ Jika belum ada, buat customer baru
+    if (!customer) {
+      customer = await prisma.customer.create({
+        data: {
+          name,
+          contact,
         },
-        { status: 403 }
-      );
+      });
     }
 
-    // ✅ Tambahan: Cek apakah sudah pernah mengisi feedback hari ini
+    // ❌ Cek apakah sudah pernah submit feedback hari ini untuk therapist yang sama
     const existingFeedback = await prisma.feedback.findFirst({
       where: {
-        customerId: existingCustomer.id,
+        customerId: customer.id,
         therapistId: parseInt(therapistId),
         createdAt: {
           gte: todayStart,
@@ -79,6 +77,7 @@ export async function POST(req: Request) {
       );
     }
 
+    // 🔁 Konversi skor ke enum Rating
     const numberToRating = (num: number): Rating => {
       const ratingMap: { [key: number]: Rating } = {
         5: "Sangat_Memuaskan",
@@ -92,10 +91,11 @@ export async function POST(req: Request) {
       return result;
     };
 
+    // ✅ Simpan feedback
     const feedback = await prisma.feedback.create({
       data: {
         therapistId: parseInt(therapistId),
-        customerId: existingCustomer.id,
+        customerId: customer.id,
         cleanliness: numberToRating(cleanliness),
         politeness: numberToRating(politeness),
         pressure: numberToRating(pressure),

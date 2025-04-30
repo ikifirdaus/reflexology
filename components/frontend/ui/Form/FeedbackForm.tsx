@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Smile, Laugh, Meh, Frown, Angry } from "lucide-react";
 import Image from "next/image";
 import { Toast } from "@/components/dashboard/ui/Toast/Toast";
 
@@ -39,17 +38,19 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchTherapist = async () => {
-      try {
-        const res = await fetch(`/api/therapist/${therapistId}`);
-        const data = await res.json();
-        setTherapistData({ name: data.name, image: data.imageUrl });
-      } catch (error) {
-        console.error("Gagal mengambil data terapis", error);
-      }
-    };
-    fetchTherapist();
-  }, [therapistId]);
+    if (step === 6) {
+      const fetchTherapist = async () => {
+        try {
+          const res = await fetch(`/api/therapist/${therapistId}`);
+          const data = await res.json();
+          setTherapistData({ name: data.name, image: data.imageUrl });
+        } catch (error) {
+          console.error("Gagal mengambil data terapis", error);
+        }
+      };
+      fetchTherapist();
+    }
+  }, [step, therapistId]);
 
   const handleFeedbackChange = (
     key: keyof typeof feedback,
@@ -62,7 +63,8 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const totalScore = Object.values(feedback).reduce((acc, val) => acc + val, 0);
+  const totalScore =
+    feedback.politeness + feedback.pressure + feedback.punctuality;
 
   const handleSubmit = async () => {
     try {
@@ -98,11 +100,66 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
   };
 
   const labels = [
-    { icon: <Laugh className="w-5 h-5" />, text: "Amazing" },
-    { icon: <Smile className="w-5 h-5" />, text: "Good" },
-    { icon: <Meh className="w-5 h-5" />, text: "Okay" },
-    { icon: <Frown className="w-5 h-5" />, text: "Bad" },
-    { icon: <Angry className="w-5 h-5" />, text: "Terrible" },
+    {
+      icon: (
+        <div className="relative w-5 h-5 sm:w-7 sm:h-7">
+          <Image
+            src="/emoji/5.png"
+            alt="Amazing"
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      text: "Amazing",
+    },
+    {
+      icon: (
+        <div className="relative w-5 h-5 sm:w-7 sm:h-7">
+          <Image
+            src="/emoji/4.png"
+            alt="Good"
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      text: "Good",
+    },
+    {
+      icon: (
+        <div className="relative w-5 h-5 sm:w-7 sm:h-7">
+          <Image
+            src="/emoji/3.png"
+            alt="Okay"
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      text: "Okay",
+    },
+    {
+      icon: (
+        <div className="relative w-5 h-5 sm:w-7 sm:h-7">
+          <Image src="/emoji/2.png" alt="Bad" fill className="object-contain" />
+        </div>
+      ),
+      text: "Bad",
+    },
+    {
+      icon: (
+        <div className="relative w-5 h-5 sm:w-7 sm:h-7">
+          <Image
+            src="/emoji/1.png"
+            alt="Terrible"
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      text: "Terrible",
+    },
   ];
 
   const feedbackKeys = [
@@ -114,9 +171,9 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
   const currentKey = feedbackKeys[step - 2];
 
   return (
-    <div className="max-w-md mx-auto p-4 text-[#442D18]">
+    <div className="max-w-md mx-auto text-[#442D18]">
       <div className="text-center mb-1">
-        {step === 1 ? (
+        {step === 1 && (
           <>
             <h1 className="font-title text-2xl uppercase mb-1">
               THERAPIST FEEDBACK FORM
@@ -129,39 +186,12 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
               Please help Sendja improve by giving feedback to our therapists.
             </p>
           </>
-        ) : (
-          therapistData && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-full aspect-[4/3] overflow-hidden rounded-lg shadow-sm">
-                <Image
-                  src={
-                    therapistData.image?.startsWith("http")
-                      ? therapistData.image
-                      : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
-                          therapistData.image || "default-avatar.png"
-                        }`
-                  }
-                  alt={therapistData.name}
-                  width={400}
-                  height={300}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="text-center text-2xl">
-                <p className="font-title text-[#A2968C]">
-                  Therapist No: {therapistId}
-                </p>
-                <p className="font-title uppercase">{therapistData.name}</p>
-              </div>
-            </div>
-          )
         )}
       </div>
 
-      <hr className="mb-4 mt-4" />
-
       {step === 1 && (
         <>
+          <hr className="mb-4 mt-4 rounded-sm border-[#A2968C]" />
           <input
             placeholder="Nama"
             value={customerName}
@@ -225,16 +255,15 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
                   onClick={() =>
                     handleFeedbackChange(currentKey, value as FeedbackValue)
                   }
-                  className={`text-body flex flex-col items-center justify-center p-4 rounded-xl border text-sm transition-all active:scale-95
+                  className={`text-body flex flex-col items-center justify-center p-2 rounded-xl border border-2 text-sm transition-all active:scale-95
                   ${
                     isSelected
                       ? "bg-[#F5E6DB] border-[#442D18]"
-                      : "hover:bg-[#F5E6DB]"
+                      : "border-[#A2968C] hover:bg-[#F5E6DB]"
                   }`}
                 >
-                  <div className="text-2xl mb-1">{labels[5 - value].icon}</div>
-                  {/* <span>{labels[5 - value].text}</span> */}
-                  <span className="text-[9px] sm:text-sm md:text-sm">
+                  <div>{labels[5 - value].icon}</div>
+                  <span className="text-[9px] sm:text-md md:text-sm">
                     {labels[5 - value].text}
                   </span>
                 </button>
@@ -242,7 +271,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
             })}
           </div>
 
-          <hr className="mb-4" />
+          <hr className="mb-4 rounded-sm border-[#A2968C]" />
           <div className="flex justify-start">
             <button
               onClick={prevStep}
@@ -256,38 +285,44 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
 
       {step === 6 && (
         <>
-          <div className="flex flex-col items-center justify-center text-center">
-            {/* <h2 className="text-xl font-semibold mb-2">Ringkasan Feedback</h2>
-            {therapistData && (
-              <div className="flex items-center gap-4 mb-4">
-                <Image
-                  src={
-                    therapistData.image?.startsWith("http")
-                      ? therapistData.image
-                      : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
-                          therapistData.image || "default-avatar.png"
-                        }`
-                  }
-                  width={64}
-                  height={64}
-                  alt={therapistData.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div className="text-left">
-                  <p className="font-semibold text-lg">{therapistData.name}</p>
-                  <p className="text-sm text-gray-500">ID: {therapistId}</p>
+          {therapistData && (
+            <div className="flex flex-col items-center gap-2 mb-4">
+              <div className="w-full flex justify-center mb-4">
+                <div className="w-[200px] aspect-[3/4] overflow-hidden rounded-lg shadow-md">
+                  <Image
+                    src={
+                      therapistData.image?.startsWith("http")
+                        ? therapistData.image
+                        : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
+                            therapistData.image || "default-avatar.png"
+                          }`
+                    }
+                    alt={therapistData.name}
+                    width={300}
+                    height={366}
+                    className="object-cover w-full h-full"
+                  />
                 </div>
               </div>
-            )} */}
 
+              <div className="text-center text-2xl">
+                <p className="font-title text-[#A2968C]">
+                  Therapist No: {therapistId}
+                </p>
+                <p className="font-title uppercase">{therapistData.name}</p>
+              </div>
+            </div>
+          )}
+
+          <hr className="mb-4 rounded-sm border-[#A2968C]" />
+
+          <div className="flex flex-col items-center justify-center text-center">
             <p className="text-body">
-              {/* <strong>Total Summary:</strong> {totalScore} */}
               Kami menghargai waktu Anda. Silakan kirim feedback dengan menekan
               tombol Submit di bawah.
             </p>
           </div>
 
-          {/* <hr className="mt-2" /> */}
           <div className="flex justify-between mt-4">
             <button
               onClick={prevStep}

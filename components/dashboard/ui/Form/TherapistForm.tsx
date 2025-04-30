@@ -133,7 +133,12 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
         </div>
 
         <div className="flex flex-col">
-          <label htmlFor="image">Profile Image</label>
+          <label htmlFor="image">
+            Profile Image{" "}
+            <span className="text-sm text-slate-400">
+              (Ukuran Foto 3x4, max tidak lebih dari 2MB)
+            </span>
+          </label>
           <Input
             type="file"
             id="image"
@@ -149,10 +154,10 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
             <Image
               src={previewUrl}
               alt="Preview"
-              width={128} // set width and height for the image
-              height={128}
+              width={300} // set width and height for the image
+              height={200}
               priority
-              className="mt-2 object-cover rounded-full border"
+              className="mt-2 object-cover rounded-sm border"
             />
           )}
         </div>

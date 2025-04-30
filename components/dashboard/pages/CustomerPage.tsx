@@ -3,11 +3,11 @@
 import CardMain from "@/components/dashboard/layouts/CardMain";
 import Layout from "@/components/dashboard/layouts/Layout";
 import TitleBreadcrumb from "@/components/dashboard/layouts/TitleBreadcrumb";
-import Button from "@/components/dashboard/ui/Button/Button";
+// import Button from "@/components/dashboard/ui/Button/Button";
 import Table from "@/components/dashboard/ui/Table/Table";
-import { PlusCircle, Trash2, FilePenLine } from "lucide-react";
+// import { Trash2, FilePenLine } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import ButtonIcon from "@/components/dashboard/ui/Button/ButtonIcon";
+// import ButtonIcon from "@/components/dashboard/ui/Button/ButtonIcon";
 import Pagination from "@/components/dashboard/ui/Pagination/Pagination";
 import { useSearchParams } from "next/navigation";
 import SearchColumn from "@/components/dashboard/ui/Search/SearchColumn";
@@ -54,19 +54,19 @@ const CustomerPage = () => {
     fetchCustomers();
   }, [page, perPage, query, fromDate, toDate]);
 
-  const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this customer?")) {
-      const response = await fetch(`/api/customer/${id}`, {
-        method: "DELETE",
-      });
+  // const handleDelete = async (id: number) => {
+  //   if (confirm("Are you sure you want to delete this customer?")) {
+  //     const response = await fetch(`/api/customer/${id}`, {
+  //       method: "DELETE",
+  //     });
 
-      if (response.ok) {
-        setCustomers(customers.filter((customer) => customer.id !== id));
-      } else {
-        alert("Failed to delete the customer.");
-      }
-    }
-  };
+  //     if (response.ok) {
+  //       setCustomers(customers.filter((customer) => customer.id !== id));
+  //     } else {
+  //       alert("Failed to delete the customer.");
+  //     }
+  //   }
+  // };
 
   const hasNextPage = page * perPage < totalItems;
   const hasPrevPage = page > 1;
@@ -79,7 +79,7 @@ const CustomerPage = () => {
     { header: "Name", accessor: "name" },
     { header: "Contact", accessor: "contact" },
     {
-      header: "Reservation Date",
+      header: "Feedback Date",
       accessor: "createdAt",
       cell: (row: Customer) => {
         const date = new Date(row.createdAt);
@@ -90,24 +90,24 @@ const CustomerPage = () => {
         });
       },
     },
-    {
-      header: "Action",
-      accessor: "action",
-      cell: (row: Customer) => (
-        <div className="flex items-center gap-2">
-          <ButtonIcon
-            url={`/admin/customer/${row.id}`}
-            icon={<FilePenLine className="w-4 h-4" />}
-          />
-          <button
-            onClick={() => handleDelete(row.id)}
-            className="p-1 bg-red-400 text-white rounded hover:bg-red-600"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ),
-    },
+    // {
+    //   header: "Action",
+    //   accessor: "action",
+    //   cell: (row: Customer) => (
+    //     <div className="flex items-center gap-2">
+    //       <ButtonIcon
+    //         url={`/admin/customer/${row.id}`}
+    //         icon={<FilePenLine className="w-4 h-4" />}
+    //       />
+    //       <button
+    //         onClick={() => handleDelete(row.id)}
+    //         className="p-1 bg-red-400 text-white rounded hover:bg-red-600"
+    //       >
+    //         <Trash2 className="w-4 h-4" />
+    //       </button>
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (
@@ -116,7 +116,7 @@ const CustomerPage = () => {
         <Skeleton className="h-8 w-48 mb-4" />
       ) : (
         <TitleBreadcrumb
-          title="Customer Reservation Data"
+          title="Customer Data"
           items={[{ text: "Customer", link: "/admin/customer" }]}
         />
       )}
@@ -131,14 +131,14 @@ const CustomerPage = () => {
                 <div className="w-full">
                   <SearchColumn />
                 </div>
-                <div className="flex mt-2 md:mt-0">
+                {/* <div className="flex mt-2 md:mt-0">
                   <Button
                     className=""
                     icon={<PlusCircle className="w-4 h-4" />}
                     url="/admin/customer/create"
                     title="Create"
                   />
-                </div>
+                </div> */}
               </>
             )}
           </div>

@@ -6,6 +6,7 @@ import {
   Users,
   UserSquare2,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,7 +18,7 @@ const Sidebar = () => {
       path: "/admin/feedbackCustomer",
     },
     { icon: UserSquare2, label: "Therapist", path: "/admin/therapist" },
-    { icon: BookUser, label: "Cust Reserv", path: "/admin/customer" },
+    { icon: BookUser, label: "Customer", path: "/admin/customer" },
     {
       icon: MenuSquare,
       label: "Treatment",
@@ -32,7 +33,7 @@ const Sidebar = () => {
   return (
     <aside className="w-64 bg-slate-800 text-white min-h-screen h-full">
       <div className="p-6">
-        <h1 className="text-2xl font-bold">Admin Panel</h1>
+        <Image src="/logo6.png" alt="" width={150} height={90} />
       </div>
 
       <nav className="mt-6">
