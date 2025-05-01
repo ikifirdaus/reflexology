@@ -37,6 +37,8 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
 
   const [isLoadingTherapist, setIsLoadingTherapist] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
     feedback.politeness + feedback.pressure + feedback.punctuality;
 
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
@@ -101,6 +104,8 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
     } catch (error) {
       console.error("Error submitting feedback:", error);
       setToast({ message: "Terjadi kesalahan saat mengirim.", type: "error" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -204,6 +209,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
             className="font-body w-full mb-3 border border-[#A2968C] p-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#C26728] text-sm"
           />
           <input
+            type="number"
             placeholder="No. Kontak (contoh: 0895xxxxxxxx)"
             value={customerContact}
             onChange={(e) => setCustomerContact(e.target.value)}
@@ -346,9 +352,17 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
             </button>
             <button
               onClick={handleSubmit}
-              className="text-body bg-[#C26728] text-white px-4 py-2 rounded-lg hover:bg-[#C26728]/80 text-sm"
+              disabled={isSubmitting}
+              className="text-body bg-[#C26728] text-white px-4 py-2 rounded-lg hover:bg-[#C26728]/80 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Submit
+              {isSubmitting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <span className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                  Mengirim...
+                </div>
+              ) : (
+                "Submit"
+              )}
             </button>
           </div>
         </>
