@@ -35,17 +35,22 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
     punctuality: 0 as FeedbackValue,
   });
 
+  const [isLoadingTherapist, setIsLoadingTherapist] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
     if (step === 6) {
       const fetchTherapist = async () => {
         try {
+          setIsLoadingTherapist(true);
           const res = await fetch(`/api/therapist/${therapistId}`);
           const data = await res.json();
           setTherapistData({ name: data.name, image: data.imageUrl });
         } catch (error) {
           console.error("Gagal mengambil data terapis", error);
+        } finally {
+          setIsLoadingTherapist(false);
         }
       };
       fetchTherapist();
@@ -285,33 +290,42 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
 
       {step === 6 && (
         <>
-          {therapistData && (
-            <div className="flex flex-col items-center gap-2 mb-4">
-              <div className="w-full flex justify-center mb-4">
-                <div className="w-[200px] aspect-[3/4] overflow-hidden rounded-lg shadow-md">
-                  <Image
-                    src={
-                      therapistData.image?.startsWith("http")
-                        ? therapistData.image
-                        : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
-                            therapistData.image || "default-avatar.png"
-                          }`
-                    }
-                    alt={therapistData.name}
-                    width={300}
-                    height={366}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </div>
-
-              <div className="text-center text-2xl">
-                <p className="font-title text-[#A2968C]">
-                  Therapist No: {therapistId}
-                </p>
-                <p className="font-title uppercase">{therapistData.name}</p>
+          {isLoadingTherapist ? (
+            <div className="flex justify-center mb-4">
+              <div className="w-[200px] aspect-[3/4] bg-[#F5E6DB] animate-pulse rounded-lg shadow-md flex justify-center items-center">
+                {" "}
+                Loading Image...{" "}
               </div>
             </div>
+          ) : (
+            therapistData && (
+              <div className="flex flex-col items-center gap-2 mb-4">
+                <div className="w-full flex justify-center mb-4">
+                  <div className="w-[200px] aspect-[3/4] overflow-hidden rounded-lg shadow-md">
+                    <Image
+                      src={
+                        therapistData.image?.startsWith("http")
+                          ? therapistData.image
+                          : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
+                              therapistData.image || "default-avatar.png"
+                            }`
+                      }
+                      alt={therapistData.name}
+                      width={300}
+                      height={366}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-center text-2xl">
+                  <p className="font-title text-[#A2968C]">
+                    Therapist No: {therapistId}
+                  </p>
+                  <p className="font-title uppercase">{therapistData.name}</p>
+                </div>
+              </div>
+            )
           )}
 
           <hr className="mb-4 rounded-sm border-[#A2968C]" />
