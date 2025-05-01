@@ -246,7 +246,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
             }
           </p>
 
-          <div className="grid grid-cols-5 gap-3 mb-4">
+          <div className="grid grid-cols-5 gap-2 mb-4">
             {[5, 4, 3, 2, 1].map((value) => {
               const isSelected = feedback[currentKey] === value;
               return (
