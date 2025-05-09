@@ -4,26 +4,25 @@ import CardMain from "@/components/dashboard/layouts/CardMain";
 import Layout from "@/components/dashboard/layouts/Layout";
 import TitleBreadcrumb from "@/components/dashboard/layouts/TitleBreadcrumb";
 import Table from "@/components/dashboard/ui/Table/Table";
-import { Trash2, FilePenLine } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import ButtonIcon from "@/components/dashboard/ui/Button/ButtonIcon";
 import Pagination from "@/components/dashboard/ui/Pagination/Pagination";
 import { useSearchParams } from "next/navigation";
 import SearchColumn from "@/components/dashboard/ui/Search/SearchColumn";
 import TableSkeleton from "@/components/dashboard/ui/TableSkeleton/TableSkeleton";
 import Skeleton from "@/components/dashboard/ui/Skeleton/Skeleton";
+import ButtonIcon from "../ui/Button/ButtonIcon";
+import { FilePenLine, PlusCircle, Trash2 } from "lucide-react";
+import Button from "../ui/Button/Button";
 
-interface User {
+interface Branch {
   id: number;
   name: string;
-  email: string;
-  role: string;
-  branch?: string;
+  createdAt: string;
 }
 
-const UserPage = () => {
+const BranchPage = () => {
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<User[]>([]);
+  const [branchs, setBranchs] = useState<Branch[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const searchParams = useSearchParams();
 
@@ -34,7 +33,7 @@ const UserPage = () => {
   const toDate = searchParams.get("toDate") || "";
 
   useEffect(() => {
-    async function fetchUsers() {
+    async function fetchBranchs() {
       setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
@@ -44,26 +43,26 @@ const UserPage = () => {
       if (fromDate) params.set("fromDate", fromDate);
       if (toDate) params.set("toDate", toDate);
 
-      const response = await fetch(`/api/user?${params.toString()}`);
+      const response = await fetch(`/api/branch?${params.toString()}`);
       const data = await response.json();
-      setUsers(data.users || []);
+      setBranchs(data.branchs || []);
       setTotalItems(data.totalItems || 0);
       setLoading(false);
     }
 
-    fetchUsers();
+    fetchBranchs();
   }, [page, perPage, query, fromDate, toDate]);
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      const response = await fetch(`/api/user/${id}`, {
+    if (confirm("Are you sure you want to delete this branch?")) {
+      const response = await fetch(`/api/branch/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        setUsers(users.filter((user) => user.id !== id));
+        setBranchs(branchs.filter((branch) => branch.id !== id));
       } else {
-        alert("Failed to delete the user.");
+        alert("Failed to delete the customer.");
       }
     }
   };
@@ -76,33 +75,26 @@ const UserPage = () => {
       header: "No",
       accessor: "no",
     },
-    { header: "Name", accessor: "name" },
-    { header: "Email", accessor: "email" },
+    { header: "Branch Name", accessor: "name" },
     {
-      header: "Role",
-      accessor: "role",
-      cell: (row: User) => {
-        let bgColor = "bg-green-500"; // default USER
-        if (row.role === "ADMIN") bgColor = "bg-blue-500";
-        else if (row.role === "SUPERADMIN") bgColor = "bg-slate-500";
-
-        return (
-          <span
-            className={`px-2 py-1 rounded text-white text-[12px] min-w-[70px] text-center inline-block ${bgColor}`}
-          >
-            {row.role.charAt(0) + row.role.slice(1).toLowerCase()}
-          </span>
-        );
+      header: "Created",
+      accessor: "createdAt",
+      cell: (row: Branch) => {
+        const date = new Date(row.createdAt);
+        return date.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
       },
     },
-    { header: "Branch", accessor: "branch" },
     {
       header: "Action",
       accessor: "action",
-      cell: (row: User) => (
+      cell: (row: Branch) => (
         <div className="flex items-center gap-2">
           <ButtonIcon
-            url={`/admin/user/${row.id}`}
+            url={`/admin/branch/${row.id}`}
             icon={<FilePenLine className="w-4 h-4" />}
           />
           <button
@@ -122,29 +114,32 @@ const UserPage = () => {
         <Skeleton className="h-8 w-48 mb-4" />
       ) : (
         <TitleBreadcrumb
-          title="User Data"
-          items={[{ text: "User", link: "/admin/user" }]}
+          title="Branch Data"
+          items={[{ text: "Branch", link: "/admin/branch" }]}
         />
       )}
+
       <CardMain>
         <div className="flex md:items-center md:justify-between flex-col md:flex-row w-full">
           <div className="flex flex-col md:flex-row gap-2 w-full">
             {loading ? (
               <Skeleton className="h-10 w-full md:w-64 mb-2" />
             ) : (
-              <div className="w-full">
-                <SearchColumn />
-              </div>
+              <>
+                <div className="w-full">
+                  <SearchColumn />
+                </div>
+                <div className="flex mt-2 md:mt-0">
+                  <Button
+                    className=""
+                    icon={<PlusCircle className="w-4 h-4" />}
+                    url="/admin/branch/create"
+                    title="Create"
+                  />
+                </div>
+              </>
             )}
           </div>
-
-          {/* <div className="flex mt-2 md:mt-0">
-            <Button
-              icon={<PlusCircle className="w-4 h-4" />}
-              url="/admin/user/create"
-              title="Create"
-            />
-          </div> */}
         </div>
 
         {loading ? (
@@ -152,7 +147,7 @@ const UserPage = () => {
         ) : (
           <>
             <Table
-              data={users}
+              data={branchs}
               columns={columns}
               currentPage={page}
               perPage={10}
@@ -172,4 +167,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default BranchPage;

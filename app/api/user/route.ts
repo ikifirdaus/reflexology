@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -17,6 +18,7 @@ type WhereFilter = {
     gte?: Date;
     lte?: Date;
   };
+  branchId?: number;
 };
 
 export async function POST(request: Request) {
@@ -43,14 +45,24 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { role, branchId } = token as { role: string; branchId?: number };
+
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const perPage = parseInt(searchParams.get("per_page") || "10");
     const query = searchParams.get("query")?.trim() || "";
     const fromDate = searchParams.get("fromDate")?.trim();
     const toDate = searchParams.get("toDate")?.trim();
+
+    const branchIdParam = searchParams.get("branchId");
 
     const where: WhereFilter = {}; // Menggunakan tipe `WhereFilter` untuk `where`
 
@@ -61,6 +73,17 @@ export async function GET(req: Request) {
       if (toDate) where.createdAt.lte = new Date(toDate);
     }
 
+    if (role === "ADMIN" && branchId) {
+      where.branchId = branchId;
+    }
+
+    if (branchIdParam) {
+      const parsedBranchId = parseInt(branchIdParam);
+      if (!isNaN(parsedBranchId)) {
+        where.branchId = parsedBranchId;
+      }
+    }
+
     if (where.createdAt && Object.keys(where.createdAt).length === 0) {
       delete where.createdAt;
     }
@@ -69,6 +92,9 @@ export async function GET(req: Request) {
     let users = await prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      include: {
+        branch: true, // ← tambahkan ini
+      },
     });
 
     // Filtering di kode
@@ -93,7 +119,17 @@ export async function GET(req: Request) {
     // Pagination setelah filtering
     const paginatedUsers = users.slice((page - 1) * perPage, page * perPage);
 
-    return NextResponse.json({ users: paginatedUsers, totalItems });
+    // return NextResponse.json({ users: paginatedUsers, totalItems });
+    return NextResponse.json({
+      users: paginatedUsers.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        branch: user.branch?.name || "-", // ← ambil nama branch
+      })),
+      totalItems,
+    });
   } catch (error) {
     console.error("Error fetching articles:", error);
     return NextResponse.json(

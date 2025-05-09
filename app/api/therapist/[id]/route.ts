@@ -35,9 +35,13 @@ export async function PATCH(request: Request) {
     const formData = await request.formData();
 
     const name = formData.get("name") as string;
-    const branch = formData.get("branch") as string;
+    const branchId = formData.get("branchId") as string;
     const file = formData.get("image") as File | null;
     const oldImage = formData.get("oldImage") as string | null;
+
+    if (!branchId || isNaN(Number(branchId))) {
+      return NextResponse.json({ error: "Invalid branch ID" }, { status: 400 });
+    }
 
     let imageUrl: string | undefined;
 
@@ -73,11 +77,22 @@ export async function PATCH(request: Request) {
       }
     }
 
+    const therapistExists = await prisma.therapist.findUnique({
+      where: { id },
+    });
+
+    if (!therapistExists) {
+      return NextResponse.json(
+        { error: "Therapist not found" },
+        { status: 404 }
+      );
+    }
+
     const updatedTherapist = await prisma.therapist.update({
       where: { id },
       data: {
         name,
-        branch,
+        branchId: Number(branchId),
         ...(imageUrl && { image: imageUrl }),
       },
     });

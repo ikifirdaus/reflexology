@@ -14,6 +14,7 @@ const dashboardPage = () => {
         />
         <div className="flex items-center gap-2">
           <Button
+            className=""
             icon={<PlusCircle className="w-4 h-4" />}
             url="/admin/users/create"
             title="Create"

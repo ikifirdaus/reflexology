@@ -5,7 +5,8 @@ import { z } from "zod";
 const formSchema = z.object({
   name: z.string().min(1, { message: "Must be 1 or more characters long" }),
   email: z.string().min(1, { message: "Must be 1 or more characters long" }),
-  role: z.enum(["ADMIN", "USER"]),
+  role: z.enum(["ADMIN", "USER", "SUPERADMIN"]),
+  branchId: z.string().min(1, { message: "Please select a branch" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -31,14 +32,15 @@ export async function PATCH(request: Request) {
         name: validateData.name,
         email: validateData.email,
         role: validateData.role,
+        branchId: parseInt(validateData.branchId),
       },
     });
 
     return NextResponse.json(updatedUser, { status: 200 });
   } catch (error) {
-    console.error("Error updating article:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Failed to update article" },
+      { error: "Failed to update user" },
       { status: 400 }
     );
   }

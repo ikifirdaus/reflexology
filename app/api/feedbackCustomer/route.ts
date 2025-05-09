@@ -1,36 +1,45 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-// Tipe untuk where filter pada Prisma
 type WhereFilter = {
   createdAt?: {
     gte?: Date;
     lte?: Date;
   };
+  branchId?: number;
 };
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { role, branchId } = token as { role: string; branchId?: number };
+
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const perPage = parseInt(searchParams.get("per_page") || "10");
-    const query = searchParams.get("query")?.trim() || "";
+    const query = searchParams.get("query")?.trim().toLowerCase() || "";
     const fromDate = searchParams.get("fromDate")?.trim();
     const toDate = searchParams.get("toDate")?.trim();
+    const branchIdParam = searchParams.get("branchId");
     const therapistName = searchParams
       .get("therapistName")
       ?.trim()
       .toLowerCase();
 
-    const where: WhereFilter = {}; // Menggunakan tipe `WhereFilter` untuk `where`
+    const where: WhereFilter = {};
 
-    // Filter tanggal di Prisma (tetap gunakan database untuk ini)
     if (fromDate || toDate) {
       where.createdAt = {};
       if (fromDate) where.createdAt.gte = new Date(fromDate);
       if (toDate) {
         const endOfDay = new Date(toDate);
-        endOfDay.setHours(23, 59, 59, 999); // <-- ini penting
+        endOfDay.setHours(23, 59, 59, 999);
         where.createdAt.lte = endOfDay;
       }
     }
@@ -39,43 +48,49 @@ export async function GET(req: Request) {
       delete where.createdAt;
     }
 
-    // Ambil semua data dulu, lalu filter di kode
     let feedbacks = await prisma.feedback.findMany({
-      where,
+      where: {
+        ...(where.createdAt && { createdAt: where.createdAt }),
+        therapist: {
+          ...(role === "ADMIN" && branchId
+            ? { branchId: branchId }
+            : branchIdParam
+            ? { branchId: parseInt(branchIdParam) }
+            : {}),
+        },
+      },
       orderBy: { createdAt: "desc" },
       include: {
-        customer: {
-          select: { name: true },
-        },
+        customer: { select: { name: true } },
         therapist: {
-          select: { name: true },
+          select: {
+            name: true,
+            branchId: true,
+            branch: { select: { name: true } },
+          },
         },
       },
     });
 
-    // Filtering di kode
+    // Filtering berdasarkan nama customer, therapist, dan therapistName
     if (query || therapistName) {
       feedbacks = feedbacks.filter((feedback) => {
-        const customer = feedback.customer || { name: "" };
-        const therapist = feedback.therapist || { name: "" };
+        const customerName = feedback.customer?.name?.toLowerCase() || "";
+        const therapistNameData = feedback.therapist?.name?.toLowerCase() || "";
 
         const matchQuery = query
-          ? customer.name.toLowerCase().includes(query.toLowerCase()) ||
-            therapist.name.toLowerCase().includes(query.toLowerCase())
+          ? customerName.includes(query) || therapistNameData.includes(query)
           : true;
 
-        const matchTherapist = therapistName
-          ? therapist.name.toLowerCase().includes(therapistName)
+        const matchTherapistName = therapistName
+          ? therapistNameData.includes(therapistName)
           : true;
 
-        return matchQuery && matchTherapist;
+        return matchQuery && matchTherapistName;
       });
     }
 
-    // Hitung total setelah filtering
     const totalItems = feedbacks.length;
-
-    // Pagination setelah filtering
     const paginatedFeedbacks = feedbacks.slice(
       (page - 1) * perPage,
       page * perPage
@@ -83,7 +98,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ therapists: paginatedFeedbacks, totalItems });
   } catch (error) {
-    console.error("Error fetching therapist:", error);
+    console.error("Error fetching feedback:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

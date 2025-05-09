@@ -18,7 +18,9 @@ import Image from "next/image";
 interface Therapist {
   id: number;
   name: string;
-  branch: string;
+  branch?: {
+    name: string;
+  };
   image: string;
   qrCodeUrl: string;
 }
@@ -82,7 +84,11 @@ const TherapistPage = () => {
       accessor: "no",
     },
     { header: "Nama Terapis", accessor: "name" },
-    { header: "Branch/Cabang", accessor: "branch" },
+    {
+      header: "Branch",
+      accessor: "branch",
+      cell: (row: Therapist) => row.branch?.name ?? "-",
+    },
     {
       header: "Foto Profile",
       accessor: "image",

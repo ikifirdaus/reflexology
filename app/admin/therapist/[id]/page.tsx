@@ -21,6 +21,9 @@ export default async function EditTherapistPage({ params }: Props) {
 
   const therapist = await prisma.therapist.findUnique({
     where: { id: therapistId },
+    include: {
+      branch: true, // ← tambahkan ini untuk ambil data relasi
+    },
   });
 
   if (!therapist) {

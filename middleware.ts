@@ -3,52 +3,62 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
   const { pathname } = req.nextUrl;
 
-  // Jika user belum login, hanya boleh akses halaman "/", "/signin", dan "/register"
+  const isPublicPath = ["/", "/signin", "/register"].includes(pathname);
+  const isAdminPath = pathname.startsWith("/admin");
+  const isFeedback = pathname.startsWith("/admin/feedbackCustomer");
+  const isTherapist = pathname.startsWith("/admin/therapist");
+  const isUsers = pathname.startsWith("/admin/user");
+  const isPersonalityTest = pathname.startsWith("/personalityTest");
+
+  // Not logged in
   if (!token) {
-    if (!["/", "/signin", "/register"].includes(pathname)) {
+    if (!isPublicPath) {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();
   }
 
-  // Jika user login tapi bukan admin, cegah akses ke "/admin/dashboard"
-  if (
-    (pathname.startsWith("/admin/dashboard") ||
-      pathname.startsWith("/admin/feedbackCustomer") ||
-      pathname.startsWith("/admin/therapist") ||
-      pathname.startsWith("/admin/customer") ||
-      pathname.startsWith("/admin/treatment") ||
-      pathname.startsWith("/admin/article") ||
-      pathname.startsWith("/admin/setting") ||
-      pathname.startsWith("/admin/users") ||
-      pathname.startsWith("/admin/blog")) &&
-    token.role !== "ADMIN"
-  ) {
+  const role = token.role;
+
+  // Role USER hanya boleh ke /personalityTest
+  if (role === "USER" && !isPersonalityTest && !isPublicPath) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Blokir akses ke /personalityTest jika bukan USER
-  if (pathname.startsWith("/personalityTest") && token.role !== "USER") {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  // Jika role ADMIN, cegah akses ke /signin, /register, dan /personalityTest
+  // Role ADMIN: hanya bisa ke /admin/feedbackCustomer, /admin/therapist, /admin/users
   if (
-    (pathname.startsWith("/signin") ||
-      pathname.startsWith("/register") ||
-      pathname.startsWith("/personalityTest")) &&
-    token.role === "ADMIN"
+    role === "ADMIN" &&
+    isAdminPath &&
+    !isFeedback &&
+    !isTherapist &&
+    !isUsers
   ) {
     return NextResponse.redirect(new URL("/admin/feedbackCustomer", req.url));
   }
 
+  // Role ADMIN tidak boleh akses /signin, /register, atau /personalityTest
+  if (
+    role === "ADMIN" &&
+    (pathname === "/signin" || pathname === "/register" || isPersonalityTest)
+  ) {
+    return NextResponse.redirect(new URL("/admin/feedbackCustomer", req.url));
+  }
+
+  // Role SUPERADMIN tidak boleh akses /signin, /register, atau /personalityTest
+  if (
+    role === "SUPERADMIN" &&
+    (pathname === "/signin" || pathname === "/register" || isPersonalityTest)
+  ) {
+    return NextResponse.redirect(new URL("/admin/feedbackCustomer", req.url));
+  }
+
+  // SUPERADMIN bisa ke mana saja (tidak perlu pembatasan di middleware)
+
   return NextResponse.next();
 }
 
-// Terapkan middleware hanya untuk route yang perlu dicegah
 export const config = {
   matcher: ["/admin/:path*", "/personalityTest/:path*", "/signin", "/register"],
 };

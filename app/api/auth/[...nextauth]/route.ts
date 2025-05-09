@@ -40,6 +40,7 @@ export const authOptions: AuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          branchId: user.branchId,
         };
       },
     }),
@@ -52,7 +53,8 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       if (session?.user) {
         session.user.id = String(token.id); // Pastikan ID tetap INT
-        session.user.role = token.role as "ADMIN" | "USER";
+        session.user.role = token.role;
+        session.user.branchId = token.branchId as number;
       }
       return session;
     },
@@ -60,6 +62,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.branchId = user.branchId;
       }
       return token;
     },

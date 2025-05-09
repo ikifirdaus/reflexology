@@ -3,15 +3,20 @@ import {
   CircleDollarSign,
   MenuSquare,
   MessageSquareDiff,
+  Store,
   Users,
   UserSquare2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const Sidebar = () => {
-  const menuItems = [
+  const { data: session } = useSession();
+  const role = session?.user?.role;
+
+  const allMenuItems = [
     {
       icon: MessageSquareDiff,
       label: "Feedback",
@@ -25,8 +30,20 @@ const Sidebar = () => {
       path: "/admin/treatment",
     },
     { icon: CircleDollarSign, label: "Pos", path: "/admin/pos" },
+    { icon: Store, label: "Branch", path: "/admin/branch" },
     { icon: Users, label: "Users/Staff", path: "/admin/user" },
   ];
+
+  const menuItems =
+    role === "ADMIN"
+      ? allMenuItems.filter((item) =>
+          [
+            "/admin/feedbackCustomer",
+            "/admin/therapist",
+            "/admin/user",
+          ].includes(item.path)
+        )
+      : allMenuItems;
 
   const pathname = usePathname();
 

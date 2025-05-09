@@ -6,8 +6,8 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { Input } from "@/components/dashboard/ui/Input/Input";
 import Link from "next/link";
+import { InputAuth } from "@/components/dashboard/ui/Input/InputAuth";
 
 const signinSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -19,6 +19,7 @@ type SignInFormData = z.infer<typeof signinSchema>;
 export default function SignIn() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -30,12 +31,15 @@ export default function SignIn() {
 
   const onSubmit = async (data: SignInFormData) => {
     setError("");
+    setIsLoading(true);
 
     const res = await signIn("credentials", {
       redirect: false,
       email: data.email,
       password: data.password,
     });
+
+    setIsLoading(false);
 
     if (res?.error) {
       setError(res.error);
@@ -46,8 +50,8 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-md border">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-[#C26728]">
+      <div className="bg-white/90 w-full max-w-md p-6 rounded-xl shadow-md border">
         <h1 className="text-2xl font-bold mb-4 text-center">
           Sign in to your account
         </h1>
@@ -63,11 +67,10 @@ export default function SignIn() {
             <label className="block text-sm font-medium mb-1">
               Email<sup className="text-red-500">*</sup>
             </label>
-            <Input
+            <InputAuth
               type="email"
               placeholder="ex: user@example.com"
               {...register("email")}
-              className="p-2 border rounded"
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">
@@ -80,11 +83,10 @@ export default function SignIn() {
             <label className="block text-sm font-medium mb-1">
               Password<sup className="text-red-500">*</sup>
             </label>
-            <Input
+            <InputAuth
               type="password"
               placeholder="********"
               {...register("password")}
-              className="p-2 border rounded"
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
@@ -95,9 +97,21 @@ export default function SignIn() {
 
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+            disabled={isLoading}
+            className={`w-full px-4 py-2 text-white rounded-lg transition duration-200 flex items-center justify-center gap-2 ${
+              isLoading
+                ? "bg-[#C26728]/50 cursor-not-allowed"
+                : "bg-[#C26728] hover:bg-[#C26728]/80"
+            }`}
           >
-            Sign In
+            {isLoading ? (
+              <>
+                <div className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
 

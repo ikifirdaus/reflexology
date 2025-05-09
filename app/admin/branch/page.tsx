@@ -1,11 +1,11 @@
 import { Suspense } from "react";
-import UserPage from "@/components/dashboard/pages/UserPage";
 import SkeletonAdminLayout from "@/components/dashboard/ui/Skeleton/SkeletonAdminLayout";
+import BranchPage from "@/components/dashboard/pages/BranchPage";
 
 export default function Page() {
   return (
     <Suspense fallback={<SkeletonAdminLayout />}>
-      <UserPage />
+      <BranchPage />
     </Suspense>
   );
 }

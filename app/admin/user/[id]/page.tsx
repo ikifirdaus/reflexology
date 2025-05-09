@@ -21,6 +21,9 @@ export default async function EditUserPage({ params }: Props) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    include: {
+      branch: true, // ← tambahkan ini untuk ambil data relasi
+    },
   });
 
   if (!user) {

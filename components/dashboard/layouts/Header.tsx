@@ -11,6 +11,12 @@ interface HeaderProps {
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { data: session } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await signOut();
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 text-gray-700 h-16">
@@ -32,13 +38,23 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200">
+            <div className="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50">
               <button
-                onClick={() => signOut()}
-                className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center justify-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                {isLoggingOut ? (
+                  <>
+                    <div className="loader w-4 h-4 border-2 border-t-transparent border-gray-700 rounded-full animate-spin" />
+                    Logging out...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </>
+                )}
               </button>
             </div>
           )}
