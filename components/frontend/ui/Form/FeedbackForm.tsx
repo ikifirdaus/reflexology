@@ -229,7 +229,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
           <h2 className="font-title text-2xl uppercase">
             {
               [
-                "CLEANLINESS",
+                "TREATMENT ROOM",
                 "POLITENESS",
                 "MASSAGE PRESSURE",
                 "MASSAGE TIMING",
@@ -239,7 +239,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
           <p className="font-body text-[14px] text-base">
             {
               [
-                "Kebersihan ruangan dan penampilan terapis.",
+                "Cleanliness, Readiness, Ambiance",
                 "Greeting. Friendliness communication. Service.",
                 "Kenyamanan dalam tekanan pijat selama treatment.",
                 "Informasi mengenai waktu dimulai dan berakhir sesi pijat.",
