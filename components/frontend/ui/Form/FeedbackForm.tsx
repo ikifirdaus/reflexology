@@ -266,7 +266,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
                   onClick={() =>
                     handleFeedbackChange(currentKey, value as FeedbackValue)
                   }
-                  className={`text-body flex flex-col items-center justify-center p-2 rounded-xl border border-2 text-sm transition-all active:scale-95
+                  className={`text-body flex flex-col items-center justify-center p-2 rounded-xl border-2 text-sm transition-all active:scale-95
                   ${
                     isSelected
                       ? "bg-[#F5E6DB] border-[#442D18]"
