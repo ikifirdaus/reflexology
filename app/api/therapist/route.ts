@@ -46,18 +46,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Simpan foto ke /public/therapist
+    // Simpan foto ke uploads/therapist
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const filename = `${randomUUID()}.jpg`;
     const therapistImagePath = path.join(
       process.cwd(),
-      "public",
+      "uploads",
       "therapist",
       filename
     );
     await writeFile(therapistImagePath, buffer);
-    const imageUrl = `/therapist/${filename}`;
+    const imageUrl = `/uploads/therapist/${filename}`;
 
     // Simpan data therapist dulu
     const newTherapist = await prisma.therapist.create({
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // Generate QR code dan simpan ke /public/qrcode
+    // Generate QR code dan simpan ke uploads/qrcode
     const feedbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/feedback/${newTherapist.id}`;
     const qrDataUrl = await QRCode.toDataURL(feedbackUrl, {
       width: 500,
@@ -79,9 +79,14 @@ export async function POST(request: Request) {
 
     const qrBuffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
     const qrFileName = `${newTherapist.id}.png`;
-    const qrCodePath = path.join(process.cwd(), "public", "qrcode", qrFileName);
+    const qrCodePath = path.join(
+      process.cwd(),
+      "uploads",
+      "qrcode",
+      qrFileName
+    );
     await writeFile(qrCodePath, qrBuffer);
-    const qrCodeUrl = `/qrcode/${qrFileName}`;
+    const qrCodeUrl = `/uploads/qrcode/${qrFileName}`;
 
     // Update therapist dengan QR Code URL
     await prisma.therapist.update({
