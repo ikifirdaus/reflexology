@@ -1,19 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
-import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-
-type WhereFilter = {
-  createdAt?: {
-    gte?: Date;
-    lte?: Date;
-  };
-  branchId?: number;
-};
 
 export async function POST(request: Request) {
   try {
@@ -23,9 +14,16 @@ export async function POST(request: Request) {
     const branchIdString = formData.get("branchId") as string;
     const file = formData.get("image");
 
-    if (!name || !branchIdString || !file || !(file instanceof File)) {
+    // Validasi field
+    if (
+      !name ||
+      !branchIdString ||
+      !file ||
+      typeof file !== "object" ||
+      typeof (file as Blob).arrayBuffer !== "function"
+    ) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { error: "Missing or invalid required fields." },
         { status: 400 }
       );
     }
@@ -38,16 +36,26 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validasi ukuran file (maks 10MB)
     const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if ((file as Blob).size > maxSize) {
       return NextResponse.json(
         { error: "Image size must be less than 10MB." },
         { status: 400 }
       );
     }
 
-    // Simpan foto ke uploads/therapist
-    const arrayBuffer = await file.arrayBuffer();
+    // Validasi tipe file (opsional, tapi direkomendasikan)
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes((file as Blob).type)) {
+      return NextResponse.json(
+        { error: "Invalid file type." },
+        { status: 400 }
+      );
+    }
+
+    // Simpan foto ke folder uploads/therapist
+    const arrayBuffer = await (file as Blob).arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const filename = `${randomUUID()}.jpg`;
     const therapistImagePath = path.join(
@@ -59,7 +67,7 @@ export async function POST(request: Request) {
     await writeFile(therapistImagePath, buffer);
     const imageUrl = `/uploads/therapist/${filename}`;
 
-    // Simpan data therapist dulu
+    // Simpan data therapist di database
     const newTherapist = await prisma.therapist.create({
       data: {
         name,
@@ -70,13 +78,14 @@ export async function POST(request: Request) {
       },
     });
 
-    // Generate QR code dan simpan ke uploads/qrcode
+    // Generate QR Code
     const feedbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/feedback/${newTherapist.id}`;
     const qrDataUrl = await QRCode.toDataURL(feedbackUrl, {
       width: 500,
       margin: 2,
     });
 
+    // Simpan QR Code ke uploads/qrcode
     const qrBuffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
     const qrFileName = `${newTherapist.id}.png`;
     const qrCodePath = path.join(
@@ -112,6 +121,14 @@ export async function POST(request: Request) {
     );
   }
 }
+
+type WhereFilter = {
+  createdAt?: {
+    gte?: Date;
+    lte?: Date;
+  };
+  branchId?: number;
+};
 
 export async function GET(req: NextRequest) {
   try {
