@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
-import cloudinary from "@/lib/cloudinary";
-import { getToken } from "next-auth/jwt";
+import { writeFile } from "fs/promises";
+import path from "path";
+import { randomUUID } from "crypto";
 import { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 type WhereFilter = {
   createdAt?: {
@@ -36,70 +38,64 @@ export async function POST(request: Request) {
       );
     }
 
-    const maxSize = 2 * 1024 * 1024;
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "Image size must be less than 2MB." },
+        { error: "Image size must be less than 10MB." },
         { status: 400 }
       );
     }
 
+    // Simpan foto ke /public/therapist
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-
-    const uploadResult = await new Promise<{ secure_url: string }>(
-      (resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream({ folder: "therapist" }, (error, result) => {
-            if (error || !result) return reject(error);
-            resolve(result);
-          })
-          .end(buffer);
-      }
+    const filename = `${randomUUID()}.jpg`;
+    const therapistImagePath = path.join(
+      process.cwd(),
+      "public",
+      "therapist",
+      filename
     );
+    await writeFile(therapistImagePath, buffer);
+    const imageUrl = `/therapist/${filename}`;
 
+    // Simpan data therapist dulu
     const newTherapist = await prisma.therapist.create({
       data: {
         name,
-        image: uploadResult.secure_url,
+        image: imageUrl,
         branch: {
-          connect: {
-            id: branchId, // ✅ sudah bertipe number
-          },
+          connect: { id: branchId },
         },
       },
     });
 
+    // Generate QR code dan simpan ke /public/qrcode
     const feedbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/feedback/${newTherapist.id}`;
     const qrDataUrl = await QRCode.toDataURL(feedbackUrl, {
       width: 500,
       margin: 2,
     });
+
     const qrBuffer = Buffer.from(qrDataUrl.split(",")[1], "base64");
+    const qrFileName = `${newTherapist.id}.png`;
+    const qrCodePath = path.join(process.cwd(), "public", "qrcode", qrFileName);
+    await writeFile(qrCodePath, qrBuffer);
+    const qrCodeUrl = `/qrcode/${qrFileName}`;
 
-    const qrUploadResult = await new Promise<{ secure_url: string }>(
-      (resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream({ folder: "qrcode" }, (error, result) => {
-            if (error || !result) return reject(error);
-            resolve(result);
-          })
-          .end(qrBuffer);
-      }
-    );
-
+    // Update therapist dengan QR Code URL
     await prisma.therapist.update({
       where: { id: newTherapist.id },
       data: {
-        qrCodeUrl: qrUploadResult.secure_url,
+        qrCodeUrl,
       },
     });
 
     return NextResponse.json(
       {
         ...newTherapist,
-        image: uploadResult.secure_url,
-        qrCodeUrl: qrUploadResult.secure_url,
+        image: imageUrl,
+        qrCodeUrl,
       },
       { status: 201 }
     );

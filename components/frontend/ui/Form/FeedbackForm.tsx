@@ -310,9 +310,10 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
                   <div className="w-[200px] aspect-[3/4] overflow-hidden rounded-lg shadow-md">
                     <Image
                       src={
-                        therapistData.image?.startsWith("http")
+                        therapistData.image?.startsWith("http") ||
+                        therapistData.image.startsWith("/")
                           ? therapistData.image
-                          : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${
+                          : `/therapist/${
                               therapistData.image || "default-avatar.png"
                             }`
                       }

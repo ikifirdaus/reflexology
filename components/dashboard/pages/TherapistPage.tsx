@@ -93,9 +93,10 @@ const TherapistPage = () => {
       header: "Foto Profile",
       accessor: "image",
       cell: (row: Therapist) => {
-        const imageUrl = row.image.startsWith("http")
-          ? row.image
-          : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${row.image}`;
+        const imageUrl =
+          row.image.startsWith("http") || row.image.startsWith("/")
+            ? row.image
+            : `/therapist/${row.image}`;
         return (
           <div>
             <Image
@@ -113,14 +114,14 @@ const TherapistPage = () => {
         );
       },
     },
-
     {
       header: "QrCode",
       accessor: "qrCodeUrl",
       cell: (row: Therapist) => {
-        const qrCodeUrl = row.qrCodeUrl.startsWith("http")
-          ? row.qrCodeUrl
-          : `https://res.cloudinary.com/dhjjemlz9/image/upload/v1744961492/therapist/${row.qrCodeUrl}`;
+        const qrCodeUrl =
+          row.qrCodeUrl.startsWith("http") || row.image.startsWith("/")
+            ? row.qrCodeUrl
+            : `/qrcode/${row.qrCodeUrl}`; // ambil dari public/qrcode/
         return (
           <div className="flex items-center gap-2">
             <Image

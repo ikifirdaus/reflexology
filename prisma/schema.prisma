@@ -8,27 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Article {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("article")
-}
-
-model Blog {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String   @db.VarChar(3000)
-  slug        String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("blog")
-}
-
 model Branch {
   id        Int      @id @default(autoincrement())
   name      String   @unique
