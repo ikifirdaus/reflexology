@@ -13,7 +13,7 @@ import { useSearchParams } from "next/navigation";
 import SearchColumn from "@/components/dashboard/ui/Search/SearchColumn";
 import TableSkeleton from "@/components/dashboard/ui/TableSkeleton/TableSkeleton";
 import Skeleton from "@/components/dashboard/ui/Skeleton/Skeleton";
-import Image from "next/image";
+// import Image from "next/image";
 
 interface Therapist {
   id: number;
@@ -93,20 +93,17 @@ const TherapistPage = () => {
       header: "Foto Profile",
       accessor: "image",
       cell: (row: Therapist) => {
-        const imageUrl =
-          row.image.startsWith("http") || row.image.startsWith("/")
-            ? row.image
-            : `/therapist/${row.image}`;
+        // const imageUrl = row.image;
         return (
           <div>
-            <Image
-              src={imageUrl}
+            <img
+              src={`/api/${row.image}`} // ✅ tanpa tambahan "therapist/" lagi
               width={40}
               height={40}
               alt={row.name}
               className="w-10 h-10 rounded-full cursor-pointer object-cover"
               onClick={() => {
-                setSelectedImage(imageUrl);
+                setSelectedImage(`/api/${row.image}`);
                 setShowImageModal(true);
               }}
             />
@@ -118,20 +115,17 @@ const TherapistPage = () => {
       header: "QrCode",
       accessor: "qrCodeUrl",
       cell: (row: Therapist) => {
-        const qrCodeUrl =
-          row.qrCodeUrl.startsWith("http") || row.image.startsWith("/")
-            ? row.qrCodeUrl
-            : `/qrcode/${row.qrCodeUrl}`; // ambil dari public/qrcode/
+        // const qrCodeUrl = row.qrCodeUrl;
         return (
           <div className="flex items-center gap-2">
-            <Image
-              src={qrCodeUrl}
+            <img
+              src={`/api/${row.qrCodeUrl}`}
               width={40}
               height={40}
               alt={row.name}
               className="w-10 h-10 rounded-full cursor-pointer object-cover"
               onClick={() => {
-                setSelectedImage(qrCodeUrl);
+                setSelectedImage(`/api/${row.qrCodeUrl}`);
                 setShowImageModal(true);
               }}
             />
@@ -223,7 +217,7 @@ const TherapistPage = () => {
                     ✕
                   </button>
                   <div className="flex justify-center items-center">
-                    <Image
+                    <img
                       src={selectedImage}
                       alt="Full View"
                       width={0}

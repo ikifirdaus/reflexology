@@ -48,7 +48,10 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
           setIsLoadingTherapist(true);
           const res = await fetch(`/api/therapist/${therapistId}`);
           const data = await res.json();
-          setTherapistData({ name: data.name, image: data.imageUrl });
+          setTherapistData({
+            name: data.name,
+            image: data.imageUrl || "/default-image.jpg",
+          });
         } catch (error) {
           console.error("Gagal mengambil data terapis", error);
         } finally {
@@ -308,15 +311,8 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
               <div className="flex flex-col items-center gap-2 mb-4">
                 <div className="w-full flex justify-center mb-4">
                   <div className="w-[200px] aspect-[3/4] overflow-hidden rounded-lg shadow-md">
-                    <Image
-                      src={
-                        therapistData.image?.startsWith("http") ||
-                        therapistData.image.startsWith("/")
-                          ? therapistData.image
-                          : `/therapist/${
-                              therapistData.image || "default-avatar.png"
-                            }`
-                      }
+                    <img
+                      src={therapistData.image}
                       alt={therapistData.name}
                       width={300}
                       height={366}

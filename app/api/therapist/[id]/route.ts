@@ -2,11 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import { randomUUID } from "crypto";
 
 export async function PATCH(request: Request) {
   try {
     const url = new URL(request.url);
-    const therapistId = url.pathname.split("/").pop();
+    const segments = url.pathname.split("/");
+    const therapistId = segments[segments.length - 1];
 
     if (!therapistId) {
       return NextResponse.json(
@@ -16,21 +18,36 @@ export async function PATCH(request: Request) {
     }
 
     const id = Number(therapistId);
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: "Invalid therapist ID" },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
+    const name = formData.get("name");
+    const branchIdRaw = formData.get("branchId");
+    const file = formData.get("image");
+    const oldImage = formData.get("oldImage");
 
-    const name = formData.get("name") as string;
-    const branchId = Number(formData.get("branchId"));
-    const file = formData.get("image") as File | null;
-    const oldImage = formData.get("oldImage") as string | null;
+    if (typeof name !== "string" || name.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Name is required and must be a string" },
+        { status: 400 }
+      );
+    }
 
+    const branchId = Number(branchIdRaw);
     if (isNaN(branchId)) {
       return NextResponse.json({ error: "Invalid branch ID" }, { status: 400 });
     }
 
     let imageUrl: string | undefined;
 
-    if (file && typeof file !== "string") {
-      const maxSize = 10 * 1024 * 1024;
+    // Handle file upload
+    if (file && file instanceof File && file.size > 0) {
+      const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
         return NextResponse.json(
           { error: "Image size must be less than 10MB." },
@@ -38,23 +55,42 @@ export async function PATCH(request: Request) {
         );
       }
 
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      // Validasi tipe file (seperti di POST)
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        return NextResponse.json(
+          { error: "Invalid file type." },
+          { status: 400 }
+        );
+      }
 
-      const fileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(process.cwd(), "public/therapist", fileName);
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uuid = randomUUID();
+      const fileName = `${uuid}.jpg`; // Sama seperti di POST
+      const uploadDir = path.join(process.cwd(), "uploads", "therapist");
+      const uploadPath = path.join(uploadDir, fileName);
 
+      await fs.mkdir(uploadDir, { recursive: true });
       await fs.writeFile(uploadPath, buffer);
 
-      imageUrl = `/therapist/${fileName}`;
+      imageUrl = `/uploads/therapist/${fileName}`;
 
-      // Hapus gambar lama
-      if (oldImage?.startsWith("/therapist/")) {
-        const oldPath = path.join(process.cwd(), "public", oldImage);
+      // Hapus gambar lama jika ada dan valid
+      // Hapus gambar lama jika ada dan valid
+      if (typeof oldImage === "string" && oldImage.length > 0) {
+        // Hilangkan slash awal jika ada
+        const cleanedOldImage = oldImage.startsWith("/")
+          ? oldImage.slice(1)
+          : oldImage;
+
+        const oldImagePath = path.join(process.cwd(), cleanedOldImage);
+
         try {
-          await fs.unlink(oldPath);
-        } catch (err) {
-          console.warn("Gagal hapus foto lama:", err);
+          await fs.unlink(oldImagePath);
+        } catch (err: any) {
+          if (err.code !== "ENOENT") {
+            console.warn("Gagal hapus foto lama:", err);
+          }
         }
       }
     }
@@ -62,7 +98,7 @@ export async function PATCH(request: Request) {
     const updatedTherapist = await prisma.therapist.update({
       where: { id },
       data: {
-        name,
+        name: name.trim(),
         branchId,
         ...(imageUrl && { image: imageUrl }),
       },
@@ -109,7 +145,11 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       name: therapist.name,
-      imageUrl: therapist.image,
+      imageUrl: therapist.image
+        ? therapist.image.startsWith("http")
+          ? therapist.image
+          : `/api${therapist.image}`
+        : null,
     });
   } catch (error) {
     console.error("Error fetching therapist:", error);

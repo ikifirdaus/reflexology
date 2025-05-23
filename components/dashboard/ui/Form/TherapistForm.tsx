@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image"; // Import Image component from next/image
+// import Image from "next/image"; // Import Image component from next/image
 
 import { Input } from "../Input/Input";
 import { ButtonSubmit } from "../Button/ButtonSubmit";
@@ -16,6 +16,7 @@ const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   branchId: z.string().min(1, { message: "Please select a branch" }),
   image: z.any().optional(),
+  // oldImage: z.any().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,7 +33,7 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
   } | null>(null);
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    therapist?.image ?? null
+    therapist?.image ? `/api/${therapist.image}` : null
   );
 
   const [branchs, setBranchs] = useState<{ id: string; name: string }[]>([]);
@@ -172,7 +173,7 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
           <label htmlFor="image">
             Profile Image{" "}
             <span className="text-sm text-slate-400">
-              (Ukuran Foto 3x4, max tidak lebih dari 2MB)
+              (Ukuran Foto 3x4, max tidak lebih dari 10MB)
             </span>
           </label>
           <Input
@@ -187,12 +188,13 @@ export default function TherapistForm({ therapist }: TherapistFormProps) {
           />
 
           {previewUrl && (
-            <Image
-              src={previewUrl}
+            <img
+              src={`${previewUrl}`}
+              // src={`/api/${previewUrl}`}
               alt="Preview"
               width={300} // set width and height for the image
               height={200}
-              priority
+              // priority
               className="mt-2 object-cover rounded-sm border"
             />
           )}

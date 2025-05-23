@@ -168,7 +168,7 @@ export async function GET(req: NextRequest) {
       where,
       orderBy: { createdAt: "desc" },
       include: {
-        branch: true, // ← tambahkan ini
+        branch: true,
       },
     });
 
@@ -176,18 +176,31 @@ export async function GET(req: NextRequest) {
       const lowerQuery = query.toLowerCase();
       therapists = therapists.filter((therapist) => {
         const name = therapist.name ?? "";
-        // const branch = therapist.branch ?? "";
         const image = therapist.image ?? "";
         const qrCodeUrl = therapist.qrCodeUrl ?? "";
 
         return (
           name.toLowerCase().includes(lowerQuery) ||
-          // branch.toLowerCase().includes(lowerQuery) ||
           image.toLowerCase().includes(lowerQuery) ||
           qrCodeUrl.toLowerCase().includes(lowerQuery)
         );
       });
     }
+
+    // **Ubah URL image & qrCode supaya mengarah ke API yang serve file uploads**
+    therapists = therapists.map((t) => ({
+      ...t,
+      image: t.image
+        ? t.image.startsWith("http") || t.image.startsWith("/")
+          ? t.image
+          : `/api/uploads/therapist/${t.image}`
+        : null,
+      qrCodeUrl: t.qrCodeUrl
+        ? t.qrCodeUrl.startsWith("http") || t.qrCodeUrl.startsWith("/")
+          ? t.qrCodeUrl
+          : `/api/uploads/qrcode/${t.qrCodeUrl}`
+        : null,
+    }));
 
     const totalItems = therapists.length;
 
