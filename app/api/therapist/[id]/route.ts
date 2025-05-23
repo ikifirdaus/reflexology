@@ -46,27 +46,33 @@ export async function PATCH(request: Request) {
     let imageUrl: string | undefined;
 
     // Handle file upload
-    if (file && file instanceof File && file.size > 0) {
+    if (
+      file &&
+      typeof file === "object" &&
+      typeof (file as Blob).arrayBuffer === "function"
+    ) {
+      const blob = file as Blob;
+      const buffer = Buffer.from(await blob.arrayBuffer());
+
       const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
+      if (buffer.length > maxSize) {
         return NextResponse.json(
           { error: "Image size must be less than 10MB." },
           { status: 400 }
         );
       }
 
-      // Validasi tipe file (seperti di POST)
+      // File type validation
       const validTypes = ["image/jpeg", "image/png", "image/webp"];
-      if (!validTypes.includes(file.type)) {
+      if (!validTypes.includes(blob.type)) {
         return NextResponse.json(
           { error: "Invalid file type." },
           { status: 400 }
         );
       }
 
-      const buffer = Buffer.from(await file.arrayBuffer());
       const uuid = randomUUID();
-      const fileName = `${uuid}.jpg`; // Sama seperti di POST
+      const fileName = `${uuid}.jpg`;
       const uploadDir = path.join(process.cwd(), "uploads", "therapist");
       const uploadPath = path.join(uploadDir, fileName);
 
@@ -75,10 +81,8 @@ export async function PATCH(request: Request) {
 
       imageUrl = `/uploads/therapist/${fileName}`;
 
-      // Hapus gambar lama jika ada dan valid
-      // Hapus gambar lama jika ada dan valid
+      // Hapus gambar lama jika ada
       if (typeof oldImage === "string" && oldImage.length > 0) {
-        // Hilangkan slash awal jika ada
         const cleanedOldImage = oldImage.startsWith("/")
           ? oldImage.slice(1)
           : oldImage;
