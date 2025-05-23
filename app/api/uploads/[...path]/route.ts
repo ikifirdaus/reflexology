@@ -6,10 +6,11 @@ import { promises as fsPromises } from "fs";
 
 export async function GET(
   req: NextRequest,
-  contextPromise: Promise<{ params: { path?: string[] } }>
+  context: { params: { path?: string[] } }
 ) {
-  const { params } = await contextPromise;
-  const paths = params.path;
+  // const { params } = await contextPromise;
+  // const paths = params.path;
+  const paths = context.params.path;
 
   if (!paths || paths.length === 0) {
     return new Response("Path not specified", { status: 400 });
