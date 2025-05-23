@@ -5,7 +5,7 @@ import Layout from "@/components/dashboard/layouts/Layout";
 import TitleBreadcrumb from "@/components/dashboard/layouts/TitleBreadcrumb";
 import Button from "@/components/dashboard/ui/Button/Button";
 import Table from "@/components/dashboard/ui/Table/Table";
-import { PlusCircle, Trash2, FilePenLine } from "lucide-react";
+import { PlusCircle, FilePenLine } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import ButtonIcon from "@/components/dashboard/ui/Button/ButtonIcon";
 import Pagination from "@/components/dashboard/ui/Pagination/Pagination";
@@ -58,19 +58,19 @@ const TherapistPage = () => {
     fetchTherapists();
   }, [page, perPage, query, fromDate, toDate]);
 
-  const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this therapist?")) {
-      const response = await fetch(`/api/therapist/${id}`, {
-        method: "DELETE",
-      });
+  // const handleDelete = async (id: number) => {
+  //   if (confirm("Are you sure you want to delete this therapist?")) {
+  //     const response = await fetch(`/api/therapist/${id}`, {
+  //       method: "DELETE",
+  //     });
 
-      if (response.ok) {
-        setTherapists(therapists.filter((therapist) => therapist.id !== id));
-      } else {
-        alert("Failed to delete the therapist.");
-      }
-    }
-  };
+  //     if (response.ok) {
+  //       setTherapists(therapists.filter((therapist) => therapist.id !== id));
+  //     } else {
+  //       alert("Failed to delete the therapist.");
+  //     }
+  //   }
+  // };
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -143,12 +143,12 @@ const TherapistPage = () => {
             url={`/admin/therapist/${row.id}`}
             icon={<FilePenLine className="w-4 h-4" />}
           />
-          <button
+          {/* <button
             onClick={() => handleDelete(row.id)}
             className="p-1 bg-red-400 text-white rounded hover:bg-red-600"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </button> */}
         </div>
       ),
     },
