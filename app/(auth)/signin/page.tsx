@@ -8,6 +8,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { InputAuth } from "@/components/dashboard/ui/Input/InputAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 const signinSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -19,6 +20,7 @@ type SignInFormData = z.infer<typeof signinSchema>;
 export default function SignIn() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -39,10 +41,9 @@ export default function SignIn() {
       password: data.password,
     });
 
-    setIsLoading(false);
-
     if (res?.error) {
       setError(res.error);
+      setIsLoading(false);
       return;
     }
 
@@ -79,15 +80,22 @@ export default function SignIn() {
             )}
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium mb-1">
               Password<sup className="text-red-500">*</sup>
             </label>
             <InputAuth
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="********"
               {...register("password")}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.password.message}
@@ -97,21 +105,17 @@ export default function SignIn() {
 
           <button
             type="submit"
-            disabled={isLoading}
             className={`w-full px-4 py-2 text-white rounded-lg transition duration-200 flex items-center justify-center gap-2 ${
               isLoading
                 ? "bg-[#C26728]/50 cursor-not-allowed"
                 : "bg-[#C26728] hover:bg-[#C26728]/80"
             }`}
+            disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <div className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              "Sign In"
+            {isLoading && (
+              <div className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
             )}
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 

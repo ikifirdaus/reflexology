@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { InputAuth } from "@/components/dashboard/ui/Input/InputAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 const registerSchema = z
   .object({
@@ -26,6 +27,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function Register() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [branchs, setBranchs] = useState<{ id: string; name: string }[]>([]);
 
@@ -56,11 +59,11 @@ export default function Register() {
       body: JSON.stringify(data),
     });
 
-    setIsLoading(false);
+    const result = await res.json();
 
     if (!res.ok) {
-      const result = await res.json();
       setError(result.error || "Something went wrong");
+      setIsLoading(false);
       return;
     }
 
@@ -133,15 +136,22 @@ export default function Register() {
             )}
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium mb-1">
               Password<sup className="text-red-500">*</sup>
             </label>
             <InputAuth
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="********"
               {...register("password")}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.password.message}
@@ -149,15 +159,22 @@ export default function Register() {
             )}
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium mb-1">
               Confirm Password<sup className="text-red-500">*</sup>
             </label>
             <InputAuth
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               placeholder="********"
               {...register("confirmPassword")}
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+            >
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
             {errors.confirmPassword && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.confirmPassword.message}
@@ -174,14 +191,10 @@ export default function Register() {
                 : "bg-[#C26728] hover:bg-[#C26728]/80"
             }`}
           >
-            {isLoading ? (
-              <>
-                <div className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />
-                Registering...
-              </>
-            ) : (
-              "Register"
+            {isLoading && (
+              <div className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
             )}
+            {isLoading ? "Registering..." : "Register"}
           </button>
         </form>
 
