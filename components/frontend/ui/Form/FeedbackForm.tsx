@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Toast } from "@/components/dashboard/ui/Toast/Toast";
+import { Send } from "lucide-react";
 
 type FeedbackValue = 1 | 2 | 3 | 4 | 5;
 
@@ -291,7 +292,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
               onClick={prevStep}
               className="text-body text-sm underline text-[#A2968C]"
             >
-              Back
+              ← Kembali
             </button>
           </div>
         </>
@@ -340,13 +341,7 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
             </p>
           </div>
 
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={prevStep}
-              className="text-body text-sm underline text-[#A2968C]"
-            >
-              Back
-            </button>
+          <div className="flex flex-col mt-4">
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -355,11 +350,21 @@ export default function FeedbackForm({ therapistId }: FeedbackFormProps) {
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   <span className="loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
-                  Mengirim...
+                  Submitting...
                 </div>
               ) : (
-                "Submit"
+                <div className="flex gap-2 justify-center items-center">
+                  Submit
+                  {/* <Save size={20} /> */}
+                  <Send size={18} />
+                </div>
               )}
+            </button>
+            <button
+              onClick={prevStep}
+              className="text-body text-sm text-[#A2968C] mt-3 underline"
+            >
+              ← Kembali ke Feedback
             </button>
           </div>
         </>

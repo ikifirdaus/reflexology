@@ -127,6 +127,11 @@ export default function SignIn() {
             </Link>
           </p>
         </div>
+        <div className="mt-2 text-center text-sm">
+          <Link href="/" className="text-gray-500 hover:underline">
+            ← Kembali ke Home
+          </Link>
+        </div>
       </div>
     </div>
   );
